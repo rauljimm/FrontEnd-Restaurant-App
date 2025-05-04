@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="rjm.frontrestaurante.ui.login.LoginFragment"
+        android:label="@string/login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mesasFragment"
+        android:name="rjm.frontrestaurante.ui.mesas.MesasFragment"
+        android:label="@string/mesas_title"
+        tools:layout="@layout/fragment_mesas">
+        <action
+            android:id="@+id/action_mesasFragment_to_detalleMesaFragment"
+            app:destination="@id/detalleMesaFragment" />
+        <action
+            android:id="@+id/action_mesasFragment_to_nuevaMesaFragment"
+            app:destination="@id/nuevaMesaFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/detalleMesaFragment"
+        android:name="rjm.frontrestaurante.ui.mesas.DetalleMesaFragment"
+        android:label="@string/detalle_mesa_title"
+        tools:layout="@layout/fragment_detalle_mesa">
+        <argument
+            android:name="mesaId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_detalleMesaFragment_to_nuevoPedidoFragment"
+            app:destination="@id/nuevoPedidoFragment" />
+        <action
+            android:id="@+id/action_detalleMesaFragment_to_detallePedidoFragment"
+            app:destination="@id/detallePedidoFragment" />
+        <action
+            android:id="@+id/action_detalleMesaFragment_to_nuevaReservaFragment"
+            app:destination="@id/nuevaReservaFragment" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nuevaMesaFragment"
+        android:name="rjm.frontrestaurante.ui.mesas.NuevaMesaFragment"
+        android:label="@string/nueva_mesa_title"
+        tools:layout="@layout/fragment_nueva_mesa" />
+
+    <fragment
+        android:id="@+id/nuevoPedidoFragment"
+        android:name="rjm.frontrestaurante.ui.pedidos.NuevoPedidoFragment"
+        android:label="@string/nuevo_pedido_title"
+        tools:layout="@layout/fragment_nuevo_pedido">
+        <argument
+            android:name="mesaId"
+            app:argType="integer" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/detallePedidoFragment"
+        android:name="rjm.frontrestaurante.ui.pedidos.DetallePedidoFragment"
+        android:label="@string/detalle_pedido_title"
+        tools:layout="@layout/fragment_detalle_pedido">
+        <argument
+            android:name="pedidoId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_detallePedidoFragment_to_agregarProductoFragment"
+            app:destination="@id/agregarProductoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/agregarProductoFragment"
+        android:name="rjm.frontrestaurante.ui.productos.AgregarProductoFragment"
+        android:label="@string/agregar_producto_title"
+        tools:layout="@layout/fragment_agregar_producto">
+        <argument
+            android:name="pedidoId"
+            app:argType="integer" />
+        <action
+            android:id="@+id/action_agregarProductoFragment_to_nuevaCategoriaFragment"
+            app:destination="@id/nuevaCategoriaFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/pedidosActivosFragment"
+        android:name="rjm.frontrestaurante.ui.pedidos.PedidosActivosFragment"
+        android:label="@string/pedidos_activos_title"
+        tools:layout="@layout/fragment_pedidos_activos">
+        <action
+            android:id="@+id/action_pedidosActivosFragment_to_detallePedidoFragment"
+            app:destination="@id/detallePedidoFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="rjm.frontrestaurante.ui.main.MainFragment"
+        android:label="@string/main_title"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_categoriasFragment"
+            app:destination="@id/categoriasFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_reservasFragment"
+            app:destination="@id/reservasFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="rjm.frontrestaurante.ui.detail.DetailFragment"
+        android:label="@string/product_detail_title"
+        tools:layout="@layout/fragment_detail">
+        <argument
+            android:name="productId"
+            app:argType="integer" />
+    </fragment>
+    
+    <!-- Fragmentos para categorías -->
+    <fragment
+        android:id="@+id/categoriasFragment"
+        android:name="rjm.frontrestaurante.ui.categorias.CategoriasFragment"
+        android:label="Categorías"
+        tools:layout="@layout/fragment_categorias">
+        <action
+            android:id="@+id/action_categoriasFragment_to_nuevaCategoriaFragment"
+            app:destination="@id/nuevaCategoriaFragment" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/nuevaCategoriaFragment"
+        android:name="rjm.frontrestaurante.ui.categorias.NuevaCategoriaFragment"
+        android:label="Nueva Categoría"
+        tools:layout="@layout/fragment_nueva_categoria" />
+    
+    <!-- Fragmentos para reservas -->
+    <fragment
+        android:id="@+id/reservasFragment"
+        android:name="rjm.frontrestaurante.ui.reservas.ReservasFragment"
+        android:label="Reservas"
+        tools:layout="@layout/fragment_reservas" />
+    
+    <fragment
+        android:id="@+id/nuevaReservaFragment"
+        android:name="rjm.frontrestaurante.ui.reservas.NuevaReservaFragment"
+        android:label="Nueva Reserva"
+        tools:layout="@layout/fragment_nueva_reserva">
+        <argument
+            android:name="mesaId"
+            app:argType="integer" />
+    </fragment>
+
+</navigation> 

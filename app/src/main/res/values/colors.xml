@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores base -->
+    <color name="primary">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="primary_light">#C5CAE9</color>
+    <color name="primary_variant">#5C6BC0</color>
+    <color name="accent">#FF5722</color>
+    <color name="accent_dark">#E64A19</color>
+    
+    <!-- Colores de sistema -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="light_background">#F5F5F5</color>
+    <color name="divider">#BDBDBD</color>
+    
+    <!-- Colores de texto -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    
+    <!-- Estados de Mesa -->
+    <color name="mesa_libre">#81C784</color>    <!-- Verde -->
+    <color name="mesa_ocupada">#FF8A65</color>  <!-- Naranja/Rojo -->
+    <color name="mesa_reservada">#64B5F6</color> <!-- Azul -->
+    <color name="mesa_mantenimiento">#E0E0E0</color> <!-- Gris -->
+    
+    <!-- Estados de Pedido -->
+    <color name="pedido_recibido">#FFECB3</color> <!-- Amarillo claro -->
+    <color name="pedido_en_preparacion">#FFE082</color> <!-- Amarillo -->
+    <color name="pedido_listo">#AED581</color> <!-- Verde claro -->
+    <color name="pedido_entregado">#81C784</color> <!-- Verde -->
+    <color name="pedido_cancelado">#EF9A9A</color> <!-- Rojo claro -->
+    
+    <!-- Estados de reserva -->
+    <color name="estado_pendiente">#FF9800</color>
+    <color name="estado_confirmado">#4CAF50</color>
+    <color name="estado_cancelado">#F44336</color>
+    <color name="estado_completado">#2196F3</color>
+</resources>

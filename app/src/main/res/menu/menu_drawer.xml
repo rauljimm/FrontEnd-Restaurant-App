@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_productos"
+            android:icon="@drawable/ic_food"
+            android:title="@string/products"
+            android:visible="false" />
+        <item
+            android:id="@+id/nav_mesas"
+            android:icon="@drawable/ic_table"
+            android:title="@string/nav_mesas" />
+        <item
+            android:id="@+id/nav_pedidos_activos"
+            android:icon="@drawable/ic_food"
+            android:title="@string/nav_pedidos_activos" />
+    </group>
+
+    <item android:title="">
+        <menu>
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_logout"
+                android:title="@string/nav_logout" />
+        </menu>
+    </item>
+</menu> 

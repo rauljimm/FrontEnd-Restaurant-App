@@ -1,0 +1,237 @@
+package rjm.frontrestaurante.ui.pedidos
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import rjm.frontrestaurante.R
+import rjm.frontrestaurante.databinding.FragmentDetallePedidoBinding
+import rjm.frontrestaurante.model.DetallePedido
+import rjm.frontrestaurante.model.EstadoDetallePedido
+import rjm.frontrestaurante.model.EstadoPedido
+import rjm.frontrestaurante.util.SessionManager
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+class DetallePedidoFragment : Fragment() {
+
+    private var _binding: FragmentDetallePedidoBinding? = null
+    private val binding get() = _binding!!
+    
+    private val args: DetallePedidoFragmentArgs by navArgs()
+    private lateinit var viewModel: DetallePedidoViewModel
+    private lateinit var detallesAdapter: DetallesPedidoAdapter
+    private val userRole = SessionManager.getUserRole()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentDetallePedidoBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // Inicializar ViewModel con el ID del pedido
+        viewModel = ViewModelProvider(this).get(DetallePedidoViewModel::class.java)
+        viewModel.setPedidoId(args.pedidoId)
+        
+        // Configurar RecyclerView para detalles
+        detallesAdapter = DetallesPedidoAdapter()
+        binding.recyclerViewDetalles.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = detallesAdapter
+        }
+        
+        // Configurar botón de actualizar estado según el rol
+        setupButtonByRole()
+        
+        // Observar datos del pedido
+        viewModel.pedido.observe(viewLifecycleOwner) { pedido ->
+            // Actualizar UI con los datos del pedido
+            binding.textViewIdPedido.text = "Pedido #${pedido.id}"
+            binding.textViewNumeroMesa.text = "Mesa: ${pedido.mesaId}"
+            
+            // Formatear estado
+            val estadoText = when(pedido.estado) {
+                EstadoPedido.RECIBIDO -> getString(R.string.pedido_recibido)
+                EstadoPedido.EN_PREPARACION -> getString(R.string.pedido_en_preparacion)
+                EstadoPedido.LISTO -> getString(R.string.pedido_listo)
+                EstadoPedido.ENTREGADO -> getString(R.string.pedido_entregado)
+                EstadoPedido.CANCELADO -> getString(R.string.pedido_cancelado)
+            }
+            binding.textViewEstadoPedido.text = "Estado: $estadoText"
+            
+            // Formatear fecha
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            binding.textViewFechaPedido.text = "Fecha: ${dateFormat.format(pedido.fecha)}"
+            
+            // Mostrar observaciones si existen
+            if (pedido.observaciones.isNotEmpty()) {
+                binding.textViewObservaciones.text = "Observaciones: ${pedido.observaciones}"
+                binding.textViewObservaciones.visibility = View.VISIBLE
+            } else {
+                binding.textViewObservaciones.visibility = View.GONE
+            }
+            
+            // Mostrar total
+            binding.textViewTotal.text = getString(R.string.total, pedido.total)
+            
+            // Actualizar lista de detalles
+            detallesAdapter.submitList(pedido.detalles)
+            
+            // Mostrar mensaje si no hay productos
+            if (pedido.detalles.isEmpty()) {
+                binding.textViewEmpty.visibility = View.VISIBLE 
+                binding.recyclerViewDetalles.visibility = View.GONE
+            } else {
+                binding.textViewEmpty.visibility = View.GONE
+                binding.recyclerViewDetalles.visibility = View.VISIBLE
+            }
+            
+            // Actualizar visibilidad del botón según el estado del pedido y el rol
+            updateButtonVisibility(pedido.estado)
+        }
+        
+        // Observar mensajes de error
+        viewModel.error.observe(viewLifecycleOwner) { mensaje ->
+            if (mensaje.isNotEmpty()) {
+                Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show()
+            }
+        }
+        
+        // Observar estado de carga
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+        
+        // Cargar datos del pedido
+        viewModel.cargarPedido()
+    }
+    
+    private fun setupButtonByRole() {
+        when (userRole) {
+            "cocinero" -> {
+                binding.buttonActualizarEstado.text = getString(R.string.action_mark_ready)
+                binding.buttonActualizarEstado.setOnClickListener {
+                    viewModel.actualizarEstadoPedido(EstadoPedido.LISTO)
+                }
+            }
+            "camarero" -> {
+                binding.buttonActualizarEstado.text = getString(R.string.action_mark_delivered)
+                binding.buttonActualizarEstado.setOnClickListener {
+                    viewModel.actualizarEstadoPedido(EstadoPedido.ENTREGADO)
+                }
+            }
+            else -> {
+                binding.buttonActualizarEstado.visibility = View.GONE
+            }
+        }
+    }
+    
+    private fun updateButtonVisibility(estadoPedido: EstadoPedido) {
+        // Llevar registro del estado del pedido para debugging
+        android.util.Log.d("DetallePedidoFragment", "Estado del pedido: $estadoPedido, Rol de usuario: $userRole")
+        
+        binding.buttonActualizarEstado.visibility = when {
+            userRole == "cocinero" && (estadoPedido == EstadoPedido.RECIBIDO || estadoPedido == EstadoPedido.EN_PREPARACION) -> {
+                android.util.Log.d("DetallePedidoFragment", "Mostrando botón para cocinero")
+                View.VISIBLE
+            }
+            userRole == "camarero" && estadoPedido == EstadoPedido.LISTO -> {
+                android.util.Log.d("DetallePedidoFragment", "Mostrando botón para camarero")
+                View.VISIBLE
+            }
+            else -> {
+                android.util.Log.d("DetallePedidoFragment", "Ocultando botón")
+                View.GONE
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
+
+/**
+ * Adaptador para la lista de detalles del pedido
+ */
+class DetallesPedidoAdapter : androidx.recyclerview.widget.ListAdapter<DetallePedido, DetallesPedidoAdapter.DetalleViewHolder>(
+    object : androidx.recyclerview.widget.DiffUtil.ItemCallback<DetallePedido>() {
+        override fun areItemsTheSame(oldItem: DetallePedido, newItem: DetallePedido) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: DetallePedido, newItem: DetallePedido) = oldItem == newItem
+    }
+) {
+    
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetalleViewHolder {
+        val binding = rjm.frontrestaurante.databinding.ItemDetallePedidoBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return DetalleViewHolder(binding)
+    }
+    
+    override fun onBindViewHolder(holder: DetalleViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
+    
+    inner class DetalleViewHolder(
+        private val binding: rjm.frontrestaurante.databinding.ItemDetallePedidoBinding
+    ) : androidx.recyclerview.widget.RecyclerView.ViewHolder(binding.root) {
+        
+        fun bind(detalle: DetallePedido) {
+            binding.apply {
+                // Mostrar información del producto
+                val producto = detalle.producto
+                if (producto != null) {
+                    textViewNombreProducto.text = producto.nombre
+                    textViewPrecioProducto.text = "Precio: ${String.format("%.2f€", producto.precio)}"
+                } else {
+                    textViewNombreProducto.text = "Producto #${detalle.productoId}"
+                    textViewPrecioProducto.text = ""
+                }
+                
+                // Mostrar cantidad y subtotal
+                textViewCantidadProducto.text = "Cantidad: ${detalle.cantidad}"
+                val subtotal = producto?.precio?.times(detalle.cantidad) ?: 0.0
+                textViewSubtotalProducto.text = "Subtotal: ${String.format("%.2f€", subtotal)}"
+                
+                // Mostrar estado del detalle
+                val estadoDetalle = when(detalle.estado) {
+                    EstadoDetallePedido.PENDIENTE -> "Pendiente"
+                    EstadoDetallePedido.EN_PREPARACION -> "En preparación"
+                    EstadoDetallePedido.LISTO -> "Listo"
+                    EstadoDetallePedido.ENTREGADO -> "Entregado"
+                    EstadoDetallePedido.CANCELADO -> "Cancelado"
+                }
+                textViewEstadoDetalle.text = estadoDetalle
+                
+                // Aplicar color según el estado
+                val colorId = when(detalle.estado) {
+                    EstadoDetallePedido.PENDIENTE -> R.color.pedido_recibido
+                    EstadoDetallePedido.EN_PREPARACION -> R.color.pedido_en_preparacion
+                    EstadoDetallePedido.LISTO -> R.color.pedido_listo
+                    EstadoDetallePedido.ENTREGADO -> R.color.pedido_entregado
+                    EstadoDetallePedido.CANCELADO -> R.color.pedido_cancelado
+                }
+                textViewEstadoDetalle.setBackgroundColor(root.context.getColor(colorId))
+                
+                // Mostrar observaciones si existen
+                if (detalle.observaciones.isNotEmpty()) {
+                    textViewObservacionesDetalle.text = "Obs: ${detalle.observaciones}"
+                    textViewObservacionesDetalle.visibility = View.VISIBLE
+                } else {
+                    textViewObservacionesDetalle.visibility = View.GONE
+                }
+            }
+        }
+    }
+} 

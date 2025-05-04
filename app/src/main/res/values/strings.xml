@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Restaurante</string>
+    
+    <!-- Login -->
+    <string name="login">Iniciar sesión</string>
+    <string name="username">Usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="login_button">Entrar</string>
+    <string name="login_error">Error al iniciar sesión</string>
+    <string name="email">Correo electrónico</string>
+    
+    <!-- Navigation Drawer -->
+    <string name="nav_mesas">Mesas</string>
+    <string name="nav_pedidos_activos">Pedidos Activos</string>
+    <string name="nav_logout">Cerrar sesión</string>
+    
+    <!-- Títulos de Fragmentos -->
+    <string name="mesas_title">Mesas</string>
+    <string name="detalle_mesa_title">Detalle de Mesa</string>
+    <string name="nuevo_pedido_title">Nuevo Pedido</string>
+    <string name="detalle_pedido_title">Detalle de Pedido</string>
+    <string name="agregar_producto_title">Agregar Producto</string>
+    <string name="pedidos_activos_title">Pedidos Activos</string>
+    <string name="product_detail">Detalle del producto</string>
+    <string name="product_detail_title">Detalle del Producto</string>
+    <string name="main_title">Productos</string>
+    <string name="products">Productos</string>
+    <string name="nueva_mesa_title">Nueva Mesa</string>
+    
+    <!-- Acciones -->
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_logout">Cerrar sesión</string>
+    <string name="action_add">Agregar</string>
+    <string name="action_add_producto">Añadir Producto</string>
+    <string name="action_add_mesa">Añadir Mesa</string>
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_send">Enviar a cocina</string>
+    <string name="action_mark_ready">Marcar como listo</string>
+    <string name="action_mark_delivered">Marcar como entregado</string>
+    <string name="action_close_table">Cerrar Mesa</string>
+    <string name="action_generate_bill">Generar Cuenta</string>
+    <string name="refresh">Actualizar</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="description">Descripción</string>
+    
+    <!-- Estados de Mesa -->
+    <string name="mesa_libre">Libre</string>
+    <string name="mesa_ocupada">Ocupada</string>
+    <string name="mesa_reservada">Reservada</string>
+    <string name="mesa_mantenimiento">Mantenimiento</string>
+    
+    <!-- Estados de Pedido -->
+    <string name="pedido_recibido">Recibido</string>
+    <string name="pedido_en_preparacion">En preparación</string>
+    <string name="pedido_listo">Listo</string>
+    <string name="pedido_entregado">Entregado</string>
+    <string name="pedido_cancelado">Cancelado</string>
+    
+    <!-- Tipos de Producto -->
+    <string name="tipo_comida">Comida</string>
+    <string name="tipo_bebida">Bebida</string>
+    <string name="tipo_postre">Postre</string>
+    <string name="tipo_entrada">Entrada</string>
+    <string name="tipo_complemento">Complemento</string>
+    
+    <!-- Etiquetas de UI -->
+    <string name="numero_mesa">Mesa %1$d</string>
+    <string name="mesa_num">Mesa: %1$d</string>
+    <string name="capacidad">Capacidad: %1$d personas</string>
+    <string name="estado">Estado: %1$s</string>
+    <string name="observaciones">Observaciones:</string>
+    <string name="cantidad">Cantidad:</string>
+    <string name="precio">Precio: %1$.2f €</string>
+    <string name="total">Total: %1$.2f €</string>
+    <string name="sin_pedidos">No hay pedidos activos</string>
+    <string name="sin_productos">No hay productos disponibles</string>
+    
+    <!-- Errores -->
+    <string name="error_cargar_mesas">Error al cargar las mesas</string>
+    <string name="error_cargar_pedidos">Error al cargar los pedidos</string>
+    <string name="error_cargar_productos">Error al cargar los productos</string>
+    <string name="error_crear_pedido">Error al crear el pedido</string>
+    <string name="error_actualizar_pedido">Error al actualizar el pedido</string>
+    
+    <!-- Otros -->
+    <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
+    <string name="required_fields">Todos los campos son obligatorios</string>
+</resources>
