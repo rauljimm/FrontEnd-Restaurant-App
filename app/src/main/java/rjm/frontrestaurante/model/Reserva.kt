@@ -21,7 +21,7 @@ data class Reserva(
  * Enumeración para representar los estados de una reserva
  */
 enum class EstadoReserva {
-    PENDIENTE, CONFIRMADA, CANCELADA, COMPLETADA;
+    PENDIENTE, CONFIRMADA, CANCELADA, COMPLETADA, CLIENTE_LLEGO, CLIENTE_NO_LLEGO;
     
     companion object {
         fun fromString(estado: String): EstadoReserva {
@@ -30,6 +30,8 @@ enum class EstadoReserva {
                 "confirmada" -> CONFIRMADA
                 "cancelada" -> CANCELADA
                 "completada" -> COMPLETADA
+                "cliente_llego" -> CLIENTE_LLEGO
+                "cliente_no_llego" -> CLIENTE_NO_LLEGO
                 else -> PENDIENTE
             }
         }

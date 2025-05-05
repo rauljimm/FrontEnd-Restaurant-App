@@ -38,13 +38,37 @@ class LoginFragment : Fragment() {
         // Inicializar ViewModel
         viewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
         
-        Log.d(TAG, "Estado inicial: isLoggedIn=${SessionManager.isLoggedIn()}, secondLoginNeeded=${preferences.isSecondLoginNeeded()}")
+        // Verificar si llegamos aquí después de un logout (argumento pasado por navegación)
+        val args = arguments
+        val isFromLogout = args?.getBoolean("from_logout", false) ?: false
         
-        // Si ya tenemos un token válido y no necesitamos segundo login, navegamos directamente
-        if (SessionManager.isLoggedIn() && !preferences.isSecondLoginNeeded()) {
-            Log.d(TAG, "Ya hay sesión válida, navegando automáticamente")
-            findNavController().navigate(R.id.action_loginFragment_to_mainFragment)
-            return
+        Log.d(TAG, "Estado inicial: isLoggedIn=${SessionManager.isLoggedIn()}, secondLoginNeeded=${preferences.isSecondLoginNeeded()}, fromLogout=$isFromLogout")
+        
+        // Solo navegamos automáticamente si tenemos una sesión válida, no necesitamos segundo login,
+        // y no venimos de un logout
+        if (SessionManager.isLoggedIn() && !preferences.isSecondLoginNeeded() && !isFromLogout) {
+            // Verificación adicional: comprobar que el token no está vacío y que tenemos un rol de usuario
+            val token = SessionManager.getToken()
+            val userRole = SessionManager.getUserRole()
+            
+            if (!token.isNullOrEmpty() && userRole.isNotEmpty()) {
+                Log.d(TAG, "Ya hay sesión válida, navegando automáticamente")
+                navigateBasedOnUserRole()
+                return
+            } else {
+                Log.d(TAG, "Sesión inválida a pesar de isLoggedIn=true, limpiando sesión")
+                SessionManager.logout()
+                preferences.clearPreferences()
+            }
+        }
+        
+        // Si venimos de un logout, limpiar campos
+        if (isFromLogout) {
+            binding.editTextEmail.setText("")
+            binding.editTextPassword.setText("")
+            // Asegurarnos de que la sesión esté limpia
+            SessionManager.logout()
+            preferences.clearPreferences()
         }
         
         // Configurar botón de inicio de sesión
@@ -56,8 +80,8 @@ class LoginFragment : Fragment() {
         viewModel.loginState.observe(viewLifecycleOwner) { result ->
             when (result) {
                 is LoginResult.Success -> {
-                    // Navegar al fragmento principal
-                    findNavController().navigate(R.id.action_loginFragment_to_mainFragment)
+                    // Navegar al fragmento correspondiente según el rol del usuario
+                    navigateBasedOnUserRole()
                 }
                 is LoginResult.Error -> {
                     Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
@@ -72,7 +96,8 @@ class LoginFragment : Fragment() {
         // Comprobar si necesitamos un segundo intento automático de login
         if (preferences.isSecondLoginNeeded() && 
             !binding.editTextEmail.text.isNullOrEmpty() &&
-            !binding.editTextPassword.text.isNullOrEmpty()) {
+            !binding.editTextPassword.text.isNullOrEmpty() &&
+            !isFromLogout) {
             // Intentar login automáticamente
             Log.d(TAG, "Realizando segundo intento automático de login")
             performLogin()
@@ -87,6 +112,29 @@ class LoginFragment : Fragment() {
             viewModel.login(email, password)
         } else {
             Toast.makeText(context, R.string.required_fields, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * Navega al fragmento correspondiente según el rol del usuario
+     */
+    private fun navigateBasedOnUserRole() {
+        val userRole = SessionManager.getUserRole()
+        Log.d(TAG, "Navegando según rol de usuario: $userRole")
+        
+        when (userRole) {
+            "admin" -> {
+                // Administrador va a la pantalla de productos
+                findNavController().navigate(R.id.action_global_to_mainFragment)
+            }
+            "cocinero" -> {
+                // Cocinero va directamente a pedidos activos
+                findNavController().navigate(R.id.action_global_to_pedidosActivosFragment)
+            }
+            else -> {
+                // Camarero u otros roles van a la pantalla de mesas por defecto
+                findNavController().navigate(R.id.action_global_to_mainFragment)
+            }
         }
     }
 

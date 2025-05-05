@@ -13,7 +13,9 @@
     <!-- Navigation Drawer -->
     <string name="nav_mesas">Mesas</string>
     <string name="nav_pedidos_activos">Pedidos Activos</string>
-    <string name="nav_logout">Cerrar sesión</string>
+    <string name="nav_reservas">Reservas</string>
+    <string name="nav_logout">Cerrar Sesión</string>
+    <string name="nav_cuentas">Historial de Cuentas</string>
     
     <!-- Títulos de Fragmentos -->
     <string name="mesas_title">Mesas</string>
@@ -27,6 +29,7 @@
     <string name="main_title">Productos</string>
     <string name="products">Productos</string>
     <string name="nueva_mesa_title">Nueva Mesa</string>
+    <string name="title_nueva_mesa">Nueva Mesa</string>
     
     <!-- Acciones -->
     <string name="action_refresh">Actualizar</string>
@@ -76,6 +79,7 @@
     <string name="total">Total: %1$.2f €</string>
     <string name="sin_pedidos">No hay pedidos activos</string>
     <string name="sin_productos">No hay productos disponibles</string>
+    <string name="sin_mesas">No hay mesas disponibles</string>
     
     <!-- Errores -->
     <string name="error_cargar_mesas">Error al cargar las mesas</string>
@@ -84,7 +88,28 @@
     <string name="error_crear_pedido">Error al crear el pedido</string>
     <string name="error_actualizar_pedido">Error al actualizar el pedido</string>
     
+    <!-- Reservas -->
+    <string name="client_name">Nombre del cliente</string>
+    <string name="client_lastname">Apellido del cliente</string>
+    <string name="client_phone">Teléfono de contacto</string>
+    
     <!-- Otros -->
     <string name="appbar_scrolling_view_behavior">com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior</string>
     <string name="required_fields">Todos los campos son obligatorios</string>
+
+    <!-- Cuentas -->
+    <string name="cuenta_id">Cuenta #%d</string>
+    <string name="cuenta_mesa">Mesa: %d</string>
+    <string name="cuenta_camarero">Camarero: %s</string>
+    <string name="cuenta_fecha">Fecha: %s</string>
+    <string name="cuenta_total">Total: %.2f€</string>
+    <string name="cuenta_metodo_pago">Método de pago: %s</string>
+    <string name="cuenta_sin_metodo">Sin método especificado</string>
+    <string name="cuenta_detalles">Detalles de la cuenta</string>
+    <string name="cuenta_sin_detalles">No hay detalles disponibles</string>
+    <string name="cuenta_resumen">Resumen de ingresos</string>
+
+    <!-- Agrego las strings para el navigation drawer -->
+    <string name="navigation_drawer_open">Abrir menú de navegación</string>
+    <string name="navigation_drawer_close">Cerrar menú de navegación</string>
 </resources>

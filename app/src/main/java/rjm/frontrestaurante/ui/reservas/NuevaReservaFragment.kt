@@ -126,12 +126,13 @@ class NuevaReservaFragment : Fragment() {
     
     private fun guardarReserva() {
         val clienteNombre = binding.editTextNombre.text.toString().trim()
+        val clienteApellido = binding.editTextApellido.text.toString().trim()
         val clienteTelefono = binding.editTextTelefono.text.toString().trim()
         val observaciones = binding.editTextObservaciones.text.toString().trim()
         val numPersonas = binding.spinnerPersonas.selectedItem.toString().toInt()
         
         // Validar campos obligatorios
-        if (clienteNombre.isEmpty() || clienteTelefono.isEmpty()) {
+        if (clienteNombre.isEmpty() || clienteApellido.isEmpty() || clienteTelefono.isEmpty()) {
             Toast.makeText(context, R.string.required_fields, Toast.LENGTH_SHORT).show()
             return
         }
@@ -140,6 +141,7 @@ class NuevaReservaFragment : Fragment() {
         viewModel.crearReserva(
             mesaId = args.mesaId,
             clienteNombre = clienteNombre,
+            clienteApellido = clienteApellido,
             clienteTelefono = clienteTelefono,
             fecha = fechaSeleccionada.time,
             hora = timeFormat.format(fechaSeleccionada.time),

@@ -95,6 +95,22 @@
                 android:layout_height="wrap_content"
                 android:text="Confirmar"
                 android:textColor="@color/estado_confirmado" />
+                
+            <Button
+                android:id="@+id/buttonLlego"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Llegó"
+                android:textColor="@android:color/holo_green_dark" />
+                
+            <Button
+                android:id="@+id/buttonNoLlego"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No llegó"
+                android:textColor="@android:color/holo_red_dark" />
 
             <Button
                 android:id="@+id/buttonCompletar"

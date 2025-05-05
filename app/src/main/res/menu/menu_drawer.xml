@@ -14,6 +14,16 @@
             android:id="@+id/nav_pedidos_activos"
             android:icon="@drawable/ic_food"
             android:title="@string/nav_pedidos_activos" />
+        <item
+            android:id="@+id/nav_reservas"
+            android:icon="@drawable/ic_calendar"
+            android:title="@string/nav_reservas"
+            android:visible="false" />
+        <item
+            android:id="@+id/nav_cuentas"
+            android:icon="@drawable/ic_money"
+            android:title="@string/nav_cuentas"
+            android:visible="false" />
     </group>
 
     <item android:title="">

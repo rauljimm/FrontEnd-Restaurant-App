@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var viewModel: MainViewModel
     private lateinit var userRole: String
+    private lateinit var drawerToggle: ActionBarDrawerToggle
     private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,30 +55,40 @@ class MainActivity : AppCompatActivity() {
         
         // Configurar DrawerLayout y NavigationView
         binding.drawerLayout?.let { drawer ->
-            // Configuración basada en el rol del usuario
-            val topLevelDestinations = when (userRole) {
-                "admin" -> setOf(R.id.mainFragment) // Admin ve productos
-                "camarero" -> setOf(R.id.mesasFragment, R.id.pedidosActivosFragment) // Camarero ve mesas y pedidos
-                "cocinero" -> setOf(R.id.pedidosActivosFragment) // Cocinero ve solo pedidos
-                else -> setOf(R.id.mesasFragment, R.id.pedidosActivosFragment) // Default
-            }
+            // Configurar todos los fragmentos como destinos para mostrar hamburguesa en vez de flecha atrás
+            val allDestinations = setOf(
+                R.id.mainFragment, 
+                R.id.mesasFragment, 
+                R.id.pedidosActivosFragment,
+                R.id.cuentasFragment,
+                R.id.reservasFragment,
+                R.id.categoriasFragment,
+                R.id.detalleMesaFragment,
+                R.id.detallePedidoFragment,
+                R.id.detailFragment,
+                R.id.nuevaMesaFragment,
+                R.id.nuevaReservaFragment,
+                R.id.nuevaCategoriaFragment,
+                R.id.nuevoPedidoFragment,
+                R.id.agregarProductoFragment,
+                R.id.detalleCuentaFragment
+            )
             
             appBarConfiguration = AppBarConfiguration(
-                topLevelDestinations,
+                allDestinations,
                 drawer
             )
             
+            // Configurar ActionBarDrawerToggle para el menú de hamburguesa
+            drawerToggle = ActionBarDrawerToggle(
+                this, drawer, binding.toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close
+            )
+            drawer.addDrawerListener(drawerToggle)
+            drawerToggle.syncState()
+            
             setupActionBarWithNavController(navController, appBarConfiguration)
             binding.navView?.setupWithNavController(navController)
-            
-            // Si es admin, navegar directamente a mainFragment (productos)
-            if (userRole == "admin") {
-                navController.navigate(R.id.mainFragment)
-            }
-            // Si es cocinero, navegar directamente a pedidosActivosFragment
-            else if (userRole == "cocinero") {
-                navController.navigate(R.id.pedidosActivosFragment)
-            }
             
             // Configurar acciones adicionales del menú
             binding.navView?.let { navView ->
@@ -85,22 +96,28 @@ class MainActivity : AppCompatActivity() {
                 val menu = navView.menu
                 when (userRole) {
                     "admin" -> {
-                        // Administrador ve productos
+                        // Administrador ve productos, categorías, cuentas, mesas y reservas
                         menu.findItem(R.id.nav_productos)?.isVisible = true
-                        menu.findItem(R.id.nav_mesas)?.isVisible = true // Admin también necesita ver mesas para crearlas
-                        menu.findItem(R.id.nav_pedidos_activos)?.isVisible = false
-                    }
-                    "camarero" -> {
-                        // Camarero ve mesas y pedidos activos
-                        menu.findItem(R.id.nav_productos)?.isVisible = false
                         menu.findItem(R.id.nav_mesas)?.isVisible = true
                         menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                        menu.findItem(R.id.nav_cuentas)?.isVisible = true
+                        menu.findItem(R.id.nav_reservas)?.isVisible = true
+                    }
+                    "camarero" -> {
+                        // Camarero ve mesas, pedidos activos, productos y reservas
+                        menu.findItem(R.id.nav_productos)?.isVisible = true
+                        menu.findItem(R.id.nav_mesas)?.isVisible = true
+                        menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                        menu.findItem(R.id.nav_cuentas)?.isVisible = false
+                        menu.findItem(R.id.nav_reservas)?.isVisible = true
                     }
                     "cocinero" -> {
                         // Cocinero ve solo pedidos activos
                         menu.findItem(R.id.nav_productos)?.isVisible = false
                         menu.findItem(R.id.nav_mesas)?.isVisible = false
                         menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                        menu.findItem(R.id.nav_cuentas)?.isVisible = false
+                        menu.findItem(R.id.nav_reservas)?.isVisible = false
                     }
                 }
                 
@@ -121,9 +138,25 @@ class MainActivity : AppCompatActivity() {
                             drawer.closeDrawer(GravityCompat.START)
                             true
                         }
+                        R.id.nav_cuentas -> {
+                            navController.navigate(R.id.cuentasFragment)
+                            drawer.closeDrawer(GravityCompat.START)
+                            true
+                        }
+                        R.id.nav_reservas -> {
+                            navController.navigate(R.id.reservasFragment)
+                            drawer.closeDrawer(GravityCompat.START)
+                            true
+                        }
                         R.id.nav_logout -> {
+                            // Cierra sesión y navega al login usando la acción global
                             viewModel.cerrarSesion()
-                            finish()
+                            
+                            // Crear bundle con argumento from_logout
+                            val bundle = Bundle()
+                            bundle.putBoolean("from_logout", true)
+                            navController.navigate(R.id.action_global_to_loginFragment, bundle)
+                            drawer.closeDrawer(GravityCompat.START)
                             true
                         }
                         else -> {
@@ -166,9 +199,11 @@ class MainActivity : AppCompatActivity() {
         if (::userRole.isInitialized && userRole == "admin") {
             menu?.findItem(R.id.action_add_producto)?.isVisible = true
             menu?.findItem(R.id.action_add_mesa)?.isVisible = true
+            Log.d(TAG, "Mostrando opciones de administrador en el menú")
         } else {
             menu?.findItem(R.id.action_add_producto)?.isVisible = false
             menu?.findItem(R.id.action_add_mesa)?.isVisible = false
+            Log.d(TAG, "Ocultando opciones de administrador en el menú. Rol actual: $userRole")
         }
         
         return true
@@ -178,6 +213,11 @@ class MainActivity : AppCompatActivity() {
      * Manejar selección de opciones del menú
      */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        // Gestionar botón hamburguesa
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true
+        }
+        
         return when (item.itemId) {
             R.id.action_refresh -> {
                 // Notificar al fragmento actual que debe actualizar sus datos
@@ -190,7 +230,13 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_add_producto -> {
                 // Navegar al fragmento para crear producto (solo admin)
-                navController.navigate(R.id.agregarProductoFragment)
+                try {
+                    navController.navigate(R.id.agregarProductoFragment)
+                    Log.d(TAG, "Navegando al fragmento para crear producto")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error al navegar a agregarProductoFragment: ${e.message}")
+                    Toast.makeText(this, "Error al abrir la pantalla de creación de producto", Toast.LENGTH_SHORT).show()
+                }
                 true
             }
             R.id.action_add_mesa -> {
@@ -199,8 +245,13 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             R.id.action_logout -> {
+                // Cierra sesión y navega al login usando la acción global
                 viewModel.cerrarSesion()
-                finish()
+                
+                // Crear bundle con argumento from_logout
+                val bundle = Bundle()
+                bundle.putBoolean("from_logout", true)
+                navController.navigate(R.id.action_global_to_loginFragment, bundle)
                 true
             }
             else -> super.onOptionsItemSelected(item)

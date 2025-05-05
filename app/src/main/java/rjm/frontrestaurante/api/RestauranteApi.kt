@@ -4,6 +4,11 @@ import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 import rjm.frontrestaurante.model.*
+import rjm.frontrestaurante.api.MesaUpdateRequest
+import rjm.frontrestaurante.api.PedidoUpdateRequest
+import rjm.frontrestaurante.api.DetallePedidoRequest
+import rjm.frontrestaurante.api.DetallePedidoUpdateRequest
+import rjm.frontrestaurante.api.CuentaUpdateRequest
 
 /**
  * Interfaz que define los endpoints de la API del restaurante
@@ -48,7 +53,9 @@ interface RestauranteApi {
     suspend fun getPedidos(
         @Header("Authorization") token: String,
         @Query("estado") estado: String? = null,
-        @Query("mesa_id") mesaId: Int? = null
+        @Query("mesa_id") mesaId: Int? = null,
+        @Query("activos") activos: Boolean? = null,
+        @Query("fecha_inicio") fechaInicio: String? = null
     ): Response<List<Pedido>>
 
     @GET("pedidos/{id}")
@@ -172,6 +179,47 @@ interface RestauranteApi {
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Unit>
+
+    @GET("mesas/{id}/reserva-activa")
+    suspend fun getReservaActiva(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Reserva>
+
+    // Cuentas
+    @GET("cuentas")
+    suspend fun getCuentas(
+        @Header("Authorization") token: String,
+        @Query("fecha_inicio") fechaInicio: String? = null,
+        @Query("fecha_fin") fechaFin: String? = null,
+        @Query("mesa_id") mesaId: Int? = null
+    ): Response<List<Cuenta>>
+
+    @GET("cuentas/{id}")
+    suspend fun getCuentaById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Cuenta>
+
+    @GET("cuentas/resumen")
+    suspend fun getResumenCuentas(
+        @Header("Authorization") token: String,
+        @Query("fecha_inicio") fechaInicio: String? = null,
+        @Query("fecha_fin") fechaFin: String? = null
+    ): Response<Map<String, Any>>
+
+    @GET("cuentas/generar/mesa/{mesaId}")
+    suspend fun generarCuentaMesa(
+        @Header("Authorization") token: String,
+        @Path("mesaId") mesaId: Int
+    ): Response<Map<String, Any>>
+
+    @PUT("cuentas/{id}")
+    suspend fun updateCuenta(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body cuenta: CuentaUpdateRequest
+    ): Response<Cuenta>
 }
 
 /**
@@ -206,32 +254,6 @@ data class PedidoRequest(
 )
 
 /**
- * Request para actualizar un pedido
- */
-data class PedidoUpdateRequest(
-    val estado: String? = null,
-    val observaciones: String? = null
-)
-
-/**
- * Request para crear un detalle de pedido
- */
-data class DetallePedidoRequest(
-    val producto_id: Int,
-    val cantidad: Int,
-    val observaciones: String? = null
-)
-
-/**
- * Request para actualizar un detalle de pedido
- */
-data class DetallePedidoUpdateRequest(
-    val cantidad: Int? = null,
-    val estado: String? = null,
-    val observaciones: String? = null
-)
-
-/**
  * Request para crear o actualizar una categoría
  */
 data class CategoriaRequest(
@@ -251,11 +273,4 @@ data class ReservaRequest(
     val num_personas: Int,
     val observaciones: String? = null,
     val estado: String? = null
-)
-
-/**
- * Request para actualizar una mesa
- */
-data class MesaUpdateRequest(
-    val estado: String
 ) 

@@ -14,19 +14,23 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 - 🧑‍🍳 **Vistas específicas por rol**: Interfaces personalizadas para camareros, cocineros y administradores
 - 🪑 **Gestión de mesas**: Visualización y control del estado de mesas
 - 📝 **Gestión de pedidos**: Creación, seguimiento y actualización de pedidos
-- 🍽️ **Gestión de productos**: Visualización y administración del menú
+- 🍽️ **Gestión de productos**: Visualización y administración del menú sin imágenes de vista previa
 - 🧾 **Facturación**: Generación de cuentas al finalizar el servicio de mesa
-- 📅 **Reservas**: Creación y gestión de reservas de mesas
-- 🌐 **Conexión en tiempo real**: Notificaciones y actualizaciones inmediatas mediante WebSockets
+- 📅 **Reservas**: Creación, gestión y eliminación de reservas
+- 🌐 **Conexión en tiempo real**: Notificaciones y actualizaciones inmediatas
+- 🍔 **Menú hamburguesa**: Navegación global desde cualquier pantalla
+- 🛠️ **Creación de elementos**: Interfaces para añadir productos y mesas (admin)
 
 ## 🎯 Funcionalidades por rol
 
 ### 👨‍💼 Administrador
 - Vista completa de todas las mesas
 - Gestión de productos y categorías
+- Creación de nuevos productos y mesas
 - Visualización de todos los pedidos
 - Creación y gestión de usuarios
 - Estadísticas y reportes
+- Gestión completa de reservas
 
 ### 🧑‍🍳 Camarero
 - Vista de mesas disponibles y ocupadas
@@ -34,6 +38,7 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 - Recepción de notificaciones cuando los pedidos están listos
 - Marcado de pedidos como entregados
 - Cierre de mesas y generación de cuentas
+- Gestión de reservas, incluyendo la eliminación de reservas completadas
 
 ### 👨‍🍳 Cocinero
 - Vista de pedidos pendientes y en preparación
@@ -47,15 +52,14 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 ## 🛠️ Tecnologías y bibliotecas
 
 - **Kotlin**: Lenguaje de programación principal
-- **Jetpack Compose**: Para construcción de interfaz de usuario moderna
-- **Retrofit**: Cliente HTTP para comunicación con la API
-- **OkHttp**: Cliente HTTP para las peticiones y WebSockets
+- **Retrofit/OkHttp**: Cliente HTTP para comunicación con la API
 - **ViewModel/LiveData**: Gestión de datos y ciclo de vida
 - **Coroutines**: Programación asíncrona
 - **Navigation Component**: Navegación entre pantallas
-- **Dagger/Hilt**: Inyección de dependencias
-- **Kotlin Serialization**: Serialización JSON
-- **Material Design 3**: Componentes de UI modernos
+- **RecyclerView**: Visualización de listas
+- **Material Design**: Componentes de UI modernos
+- **GSON**: Serialización JSON
+- **DrawerLayout/NavigationView**: Navegación con menú lateral
 
 ## ⚙️ Requisitos e Instalación
 
@@ -81,6 +85,14 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 
 4. Compilar y ejecutar en un dispositivo o emulador
 
+## 📱 Interfaz de Usuario
+
+### Mejoras recientes:
+- **Menú hamburguesa global**: Acceso a la navegación desde cualquier pantalla
+- **Diseño optimizado**: Interfaz limpia sin imágenes de previsualización en productos
+- **Gestión de reservas simplificada**: Botón único para eliminar reservas completadas
+- **Modo admin mejorado**: Acceso rápido a creación de productos y mesas
+
 ## 🔄 Flujo de trabajo principal
 
 ### Para camareros:
@@ -90,11 +102,18 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 4. **Gestión de pedido**: Visualizar y actualizar estado de pedidos
 5. **Entrega**: Marcar pedidos como entregados
 6. **Cierre de mesa**: Generar cuenta y liberar mesa
+7. **Gestión de reservas**: Eliminar reservas completadas o canceladas
 
 ### Para cocineros:
 1. **Login**: Ingresar con credenciales de cocinero
 2. **Vista de pedidos activos**: Ver todos los pedidos pendientes
 3. **Actualización de estado**: Cambiar pedidos a "en preparación" y "listos"
+
+### Para administradores:
+1. **Login**: Ingresar con credenciales de administrador
+2. **Acceso completo**: Navegar por todas las secciones de la aplicación
+3. **Creación de recursos**: Añadir nuevos productos y mesas desde el menú superior
+4. **Gestión general**: Administrar todos los aspectos del restaurante
 
 ## 🧪 Pruebas
 
@@ -141,9 +160,15 @@ app/
 La aplicación se comunica con el backend FastAPI a través de:
 
 - **REST API**: Para operaciones CRUD estándar
-- **WebSockets**: Para notificaciones en tiempo real
+- **Autenticación JWT**: Almacenando el token de forma segura para solicitudes futuras
 
-La autenticación se realiza mediante JWT, almacenando el token de forma segura para solicitudes futuras.
+Principales endpoints utilizados:
+- `/login`: Autenticación de usuarios
+- `/mesas`: Gestión de mesas y su estado
+- `/pedidos`: Creación y seguimiento de pedidos
+- `/productos`: Visualización y administración del menú
+- `/reservas`: Gestión de reservas
+- `/categorias`: Organización de productos
 
 ## 🔮 Futuras mejoras
 
@@ -151,8 +176,9 @@ La autenticación se realiza mediante JWT, almacenando el token de forma segura 
 - Soporte para múltiples idiomas
 - Integración con sistemas de pago
 - Versión tablet optimizada para mesas interactivas
-- Análisis de datos y estadísticas avanzadas
 - Notificaciones push para eventos importantes
+- Mejora de la interfaz de usuario con animaciones y transiciones
+- Optimización del rendimiento en dispositivos de gama baja
 
 ## 📧 Contacto
 

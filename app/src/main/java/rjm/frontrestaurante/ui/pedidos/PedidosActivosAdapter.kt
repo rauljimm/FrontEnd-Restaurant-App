@@ -55,6 +55,11 @@ class PedidosActivosAdapter(
                 }
                 textViewFechaPedido.text = android.text.format.DateFormat.format("dd/MM/yyyy HH:mm", pedido.fecha)
                 
+                // Mostrar el total del pedido y numero de productos
+                val numProductos = pedido.detalles.fold(0) { acc, detalle -> acc + detalle.cantidad }
+                textViewTotalProductos.text = "$numProductos productos"
+                textViewTotalPedido.text = "Total: ${String.format("%.2f€", pedido.total)}"
+                
                 // Configurar visibilidad del botón según rol y estado
                 if (isCocinero) {
                     // Cocineros: Botón para iniciar preparación si está RECIBIDO
@@ -80,8 +85,15 @@ class PedidosActivosAdapter(
                     }
                 } else {
                     // Camareros: Solo ven botón para pedidos LISTOS
-                    buttonMarcarListo.visibility = if (pedido.estado == EstadoPedido.LISTO) View.VISIBLE else View.GONE
-                    buttonMarcarListo.text = root.context.getString(R.string.action_mark_delivered)
+                    if (pedido.estado == EstadoPedido.LISTO) {
+                        buttonMarcarListo.visibility = View.VISIBLE
+                        buttonMarcarListo.text = root.context.getString(R.string.action_mark_delivered)
+                        buttonMarcarListo.setOnClickListener {
+                            onMarcarListoClick(pedido)
+                        }
+                    } else {
+                        buttonMarcarListo.visibility = View.GONE
+                    }
                 }
                 
                 // Configurar colores según estado

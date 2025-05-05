@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import rjm.frontrestaurante.R
-import rjm.frontrestaurante.adapter.ProductoAdapter
+import rjm.frontrestaurante.adapter.ProductosPorCategoriaAdapter
 import rjm.frontrestaurante.databinding.FragmentMainBinding
 import rjm.frontrestaurante.model.Producto
 import rjm.frontrestaurante.util.SessionManager
@@ -21,7 +21,7 @@ class MainFragment : Fragment() {
     private val binding get() = _binding!!
     
     private lateinit var viewModel: MainViewModel
-    private lateinit var productoAdapter: ProductoAdapter
+    private lateinit var productosPorCategoriaAdapter: ProductosPorCategoriaAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,18 +42,20 @@ class MainFragment : Fragment() {
         binding.recyclerViewProductos.layoutManager = LinearLayoutManager(requireContext())
         
         // Inicializar adapter
-        productoAdapter = ProductoAdapter { producto -> onProductoClick(producto) }
-        binding.recyclerViewProductos.adapter = productoAdapter
+        productosPorCategoriaAdapter = ProductosPorCategoriaAdapter { producto -> onProductoClick(producto) }
+        binding.recyclerViewProductos.adapter = productosPorCategoriaAdapter
         
-        // Configurar chips de navegación
-        setupNavigationChips()
+        // Cargar productos por categoría
+        viewModel.cargarProductosPorCategoria()
         
-        // Cargar productos
-        viewModel.cargarProductos()
-        
-        // Observar lista de productos
-        viewModel.productos.observe(viewLifecycleOwner) { productos ->
-            productoAdapter.submitList(productos)
+        // Observar productos por categoría
+        viewModel.productosPorCategoria.observe(viewLifecycleOwner) { productosPorCategoria ->
+            productosPorCategoriaAdapter.actualizarProductosPorCategoria(productosPorCategoria)
+            
+            // Si no hay productos, mostrar mensaje
+            if (productosPorCategoria.isEmpty()) {
+                Toast.makeText(context, "No hay productos disponibles", Toast.LENGTH_SHORT).show()
+            }
         }
         
         // Observar mensajes de error
@@ -61,36 +63,6 @@ class MainFragment : Fragment() {
             if (mensaje.isNotEmpty()) {
                 Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show()
             }
-        }
-    }
-    
-    private fun setupNavigationChips() {
-        // Chip para mesas
-        binding.chipMesas.setOnClickListener {
-            findNavController().navigate(R.id.mesasFragment)
-        }
-        
-        // Chip para pedidos
-        binding.chipPedidos.setOnClickListener {
-            findNavController().navigate(R.id.pedidosActivosFragment)
-        }
-        
-        // Chip para categorías
-        binding.chipCategorias.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_categoriasFragment)
-        }
-        
-        // Chip para reservas
-        binding.chipReservas.setOnClickListener {
-            findNavController().navigate(R.id.action_mainFragment_to_reservasFragment)
-        }
-        
-        // Mostrar/ocultar chips según el rol del usuario
-        val rol = SessionManager.getUserRole()
-        if (rol == "admin") {
-            binding.chipCategorias.visibility = View.VISIBLE
-        } else {
-            binding.chipCategorias.visibility = View.GONE
         }
     }
     

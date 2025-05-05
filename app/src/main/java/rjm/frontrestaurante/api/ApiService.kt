@@ -7,6 +7,7 @@ import rjm.frontrestaurante.model.LoginRequest
 import rjm.frontrestaurante.model.LoginResponse
 import rjm.frontrestaurante.model.Producto
 import rjm.frontrestaurante.model.Usuario
+import rjm.frontrestaurante.model.Categoria
 
 /**
  * Interfaz que define los endpoints de la API REST
@@ -48,6 +49,14 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body producto: RequestBody
     ): Response<Producto>
+    
+    /**
+     * Obtener lista de categorías
+     */
+    @GET("categorias")
+    suspend fun getCategorias(
+        @Header("Authorization") token: String
+    ): Response<List<Categoria>>
     
     // Aquí puedes añadir más endpoints según necesites
 } 

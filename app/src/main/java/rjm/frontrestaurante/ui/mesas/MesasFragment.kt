@@ -46,6 +46,16 @@ class MesasFragment : Fragment(), Refreshable {
         binding.recyclerViewMesas.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.recyclerViewMesas.adapter = adapter
         
+        // Configurar FloatingActionButton para nueva mesa (solo visible para administradores)
+        binding.fabNuevaMesa.setOnClickListener {
+            val action = MesasFragmentDirections.actionMesasFragmentToNuevaMesaFragment()
+            findNavController().navigate(action)
+        }
+        
+        // Solo mostrar el FAB a los administradores
+        val userRole = rjm.frontrestaurante.util.SessionManager.getUserRole()
+        binding.fabNuevaMesa.visibility = if (userRole == "admin") View.VISIBLE else View.GONE
+        
         // Configurar SwipeRefreshLayout
         binding.swipeRefreshLayout.setOnRefreshListener {
             viewModel.cargarMesas()

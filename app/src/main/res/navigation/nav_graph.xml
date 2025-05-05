@@ -5,6 +5,27 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
+    <!-- Acción global para navegar al login desde cualquier fragmento -->
+    <action
+        android:id="@+id/action_global_to_loginFragment"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+        
+    <!-- Acción global para navegar al fragmento principal (productos) -->
+    <action
+        android:id="@+id/action_global_to_mainFragment"
+        app:destination="@id/mainFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+        
+    <!-- Acción global para navegar al fragmento de pedidos activos -->
+    <action
+        android:id="@+id/action_global_to_pedidosActivosFragment"
+        app:destination="@id/pedidosActivosFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="rjm.frontrestaurante.ui.login.LoginFragment"
@@ -52,8 +73,14 @@
     <fragment
         android:id="@+id/nuevaMesaFragment"
         android:name="rjm.frontrestaurante.ui.mesas.NuevaMesaFragment"
-        android:label="@string/nueva_mesa_title"
-        tools:layout="@layout/fragment_nueva_mesa" />
+        android:label="@string/title_nueva_mesa"
+        tools:layout="@layout/fragment_nueva_mesa">
+        <action
+            android:id="@+id/action_nuevaMesaFragment_to_mesasFragment"
+            app:destination="@id/mesasFragment"
+            app:popUpTo="@id/mesasFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/nuevoPedidoFragment"
@@ -85,7 +112,8 @@
         tools:layout="@layout/fragment_agregar_producto">
         <argument
             android:name="pedidoId"
-            app:argType="integer" />
+            app:argType="integer"
+            android:defaultValue="-1" />
         <action
             android:id="@+id/action_agregarProductoFragment_to_nuevaCategoriaFragment"
             app:destination="@id/nuevaCategoriaFragment" />
@@ -158,6 +186,28 @@
         tools:layout="@layout/fragment_nueva_reserva">
         <argument
             android:name="mesaId"
+            app:argType="integer" />
+    </fragment>
+
+    <!-- Fragmento de cuentas -->
+    <fragment
+        android:id="@+id/cuentasFragment"
+        android:name="rjm.frontrestaurante.ui.cuentas.CuentasFragment"
+        android:label="@string/nav_cuentas"
+        tools:layout="@layout/fragment_cuentas">
+        <action
+            android:id="@+id/action_cuentasFragment_to_detalleCuentaFragment"
+            app:destination="@id/detalleCuentaFragment" />
+    </fragment>
+    
+    <!-- Fragmento de detalle de cuenta -->
+    <fragment
+        android:id="@+id/detalleCuentaFragment"
+        android:name="rjm.frontrestaurante.ui.cuentas.DetalleCuentaFragment"
+        android:label="@string/cuenta_detalles"
+        tools:layout="@layout/fragment_detalle_cuenta">
+        <argument
+            android:name="cuentaId"
             app:argType="integer" />
     </fragment>
 

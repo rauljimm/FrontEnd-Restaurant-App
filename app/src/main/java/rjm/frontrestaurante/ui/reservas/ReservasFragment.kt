@@ -1,6 +1,5 @@
 package rjm.frontrestaurante.ui.reservas
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,13 +13,14 @@ import rjm.frontrestaurante.R
 import rjm.frontrestaurante.databinding.FragmentReservasBinding
 import rjm.frontrestaurante.model.EstadoReserva
 import rjm.frontrestaurante.model.Reserva
+import rjm.frontrestaurante.ui.main.Refreshable
 import java.text.SimpleDateFormat
 import java.util.*
 
 /**
  * Fragmento para listar y gestionar reservas
  */
-class ReservasFragment : Fragment() {
+class ReservasFragment : Fragment(), Refreshable {
 
     private var _binding: FragmentReservasBinding? = null
     private val binding get() = _binding!!
@@ -28,7 +28,6 @@ class ReservasFragment : Fragment() {
     private lateinit var viewModel: ReservasViewModel
     private lateinit var adapter: ReservasAdapter
     
-    private var fechaFiltro: Date? = null
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreateView(
@@ -49,16 +48,17 @@ class ReservasFragment : Fragment() {
         // Configurar RecyclerView y adaptador
         setupRecyclerView()
         
-        // Configurar filtro de fecha
-        binding.buttonFiltrarFecha.setOnClickListener {
-            mostrarSelectorFecha()
+        // Configurar botón para eliminar reservas completadas
+        binding.buttonLimpiarReservasClientes.setOnClickListener {
+            viewModel.eliminarReservasClientes()
+            Toast.makeText(context, "Eliminando reservas completadas...", Toast.LENGTH_SHORT).show()
         }
         
-        // Configurar botón para limpiar filtro
-        binding.buttonLimpiarFiltro.setOnClickListener {
-            fechaFiltro = null
-            binding.textViewFechaFiltro.text = "Todas las fechas"
-            cargarReservas()
+        // Observar resultado de operaciones
+        viewModel.operationSuccess.observe(viewLifecycleOwner) { success ->
+            if (success) {
+                cargarReservas()
+            }
         }
         
         // Observar estado de carga
@@ -87,6 +87,14 @@ class ReservasFragment : Fragment() {
             },
             onCompletarListener = { reserva ->
                 viewModel.actualizarEstadoReserva(reserva.id, EstadoReserva.COMPLETADA)
+            },
+            onLlegoListener = { reserva ->
+                // Cuando el cliente llega, actualizamos el estado
+                viewModel.actualizarEstadoReserva(reserva.id, EstadoReserva.CLIENTE_LLEGO)
+            },
+            onNoLlegoListener = { reserva ->
+                // Cuando el cliente no llega, actualizamos el estado
+                viewModel.actualizarEstadoReserva(reserva.id, EstadoReserva.CLIENTE_NO_LLEGO)
             }
         )
         
@@ -102,32 +110,12 @@ class ReservasFragment : Fragment() {
         }
     }
     
-    private fun mostrarSelectorFecha() {
-        val calendar = Calendar.getInstance()
-        if (fechaFiltro != null) {
-            calendar.time = fechaFiltro!!
-        }
-        
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        
-        DatePickerDialog(requireContext(), { _, y, m, d ->
-            calendar.set(Calendar.YEAR, y)
-            calendar.set(Calendar.MONTH, m)
-            calendar.set(Calendar.DAY_OF_MONTH, d)
-            fechaFiltro = calendar.time
-            
-            // Actualizar texto del filtro
-            binding.textViewFechaFiltro.text = "Fecha: ${dateFormat.format(fechaFiltro!!)}"
-            
-            // Cargar reservas con filtro
-            cargarReservas()
-        }, year, month, day).show()
+    private fun cargarReservas() {
+        viewModel.cargarReservas()
     }
     
-    private fun cargarReservas() {
-        viewModel.cargarReservas(fechaFiltro)
+    override fun onRefresh() {
+        cargarReservas()
     }
     
     override fun onDestroyView() {
@@ -142,7 +130,9 @@ class ReservasFragment : Fragment() {
 class ReservasAdapter(
     private val onCancelarListener: (Reserva) -> Unit,
     private val onConfirmarListener: (Reserva) -> Unit,
-    private val onCompletarListener: (Reserva) -> Unit
+    private val onCompletarListener: (Reserva) -> Unit,
+    private val onLlegoListener: (Reserva) -> Unit = {},
+    private val onNoLlegoListener: (Reserva) -> Unit = {}
 ) : androidx.recyclerview.widget.ListAdapter<Reserva, ReservasAdapter.ReservaViewHolder>(
     object : androidx.recyclerview.widget.DiffUtil.ItemCallback<Reserva>() {
         override fun areItemsTheSame(oldItem: Reserva, newItem: Reserva) = oldItem.id == newItem.id
@@ -183,13 +173,17 @@ class ReservasAdapter(
                         buttonConfirmar.visibility = View.VISIBLE
                         buttonCancelar.visibility = View.VISIBLE
                         buttonCompletar.visibility = View.GONE
+                        buttonLlego.visibility = View.GONE
+                        buttonNoLlego.visibility = View.GONE
                     }
                     EstadoReserva.CONFIRMADA -> {
                         textViewEstado.text = "CONFIRMADA"
                         textViewEstado.setTextColor(root.context.getColor(R.color.estado_confirmado))
                         buttonConfirmar.visibility = View.GONE
                         buttonCancelar.visibility = View.VISIBLE
-                        buttonCompletar.visibility = View.VISIBLE
+                        buttonCompletar.visibility = View.GONE
+                        buttonLlego.visibility = View.VISIBLE
+                        buttonNoLlego.visibility = View.VISIBLE
                     }
                     EstadoReserva.CANCELADA -> {
                         textViewEstado.text = "CANCELADA"
@@ -197,6 +191,8 @@ class ReservasAdapter(
                         buttonConfirmar.visibility = View.GONE
                         buttonCancelar.visibility = View.GONE
                         buttonCompletar.visibility = View.GONE
+                        buttonLlego.visibility = View.GONE
+                        buttonNoLlego.visibility = View.GONE
                     }
                     EstadoReserva.COMPLETADA -> {
                         textViewEstado.text = "COMPLETADA"
@@ -204,6 +200,26 @@ class ReservasAdapter(
                         buttonConfirmar.visibility = View.GONE
                         buttonCancelar.visibility = View.GONE
                         buttonCompletar.visibility = View.GONE
+                        buttonLlego.visibility = View.GONE
+                        buttonNoLlego.visibility = View.GONE
+                    }
+                    EstadoReserva.CLIENTE_LLEGO -> {
+                        textViewEstado.text = "CLIENTE LLEGÓ"
+                        textViewEstado.setTextColor(android.graphics.Color.parseColor("#4CAF50")) // Verde
+                        buttonConfirmar.visibility = View.GONE
+                        buttonCancelar.visibility = View.GONE
+                        buttonCompletar.visibility = View.VISIBLE
+                        buttonLlego.visibility = View.GONE
+                        buttonNoLlego.visibility = View.GONE
+                    }
+                    EstadoReserva.CLIENTE_NO_LLEGO -> {
+                        textViewEstado.text = "NO SE PRESENTÓ"
+                        textViewEstado.setTextColor(android.graphics.Color.parseColor("#FF5722")) // Naranja
+                        buttonConfirmar.visibility = View.GONE
+                        buttonCancelar.visibility = View.GONE
+                        buttonCompletar.visibility = View.GONE
+                        buttonLlego.visibility = View.GONE
+                        buttonNoLlego.visibility = View.GONE
                     }
                 }
                 
@@ -211,6 +227,8 @@ class ReservasAdapter(
                 buttonCancelar.setOnClickListener { onCancelarListener(reserva) }
                 buttonConfirmar.setOnClickListener { onConfirmarListener(reserva) }
                 buttonCompletar.setOnClickListener { onCompletarListener(reserva) }
+                buttonLlego.setOnClickListener { onLlegoListener(reserva) }
+                buttonNoLlego.setOnClickListener { onNoLlegoListener(reserva) }
                 
                 // Mostrar observaciones si las hay
                 if (reserva.observaciones.isNotEmpty()) {

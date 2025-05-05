@@ -7,7 +7,7 @@ import java.util.Date
  */
 data class Pedido(
     val id: Int,
-    val mesaId: Int,
+    val mesaId: Int? = null,
     val camareroId: Int,
     val estado: EstadoPedido,
     val observaciones: String = "",

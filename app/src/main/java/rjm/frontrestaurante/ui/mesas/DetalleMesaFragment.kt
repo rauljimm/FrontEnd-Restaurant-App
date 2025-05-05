@@ -6,6 +6,8 @@ import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -56,7 +58,7 @@ class DetalleMesaFragment : Fragment(), Refreshable {
         
         // Configurar SwipeRefreshLayout
         binding.swipeRefreshLayout.setOnRefreshListener {
-            viewModel.cargarDatosMesa()
+            viewModel.refreshData()
         }
         
         // Configurar FAB para nuevo pedido
@@ -95,6 +97,35 @@ class DetalleMesaFragment : Fragment(), Refreshable {
             binding.fabNuevoPedido.visibility = if (userRole == "camarero" && mesa.estado != EstadoMesa.MANTENIMIENTO) View.VISIBLE else View.GONE
             binding.buttonReservar.visibility = if (userRole == "camarero" && mesa.estado == EstadoMesa.LIBRE) View.VISIBLE else View.GONE
             binding.buttonCerrarMesa.visibility = if (userRole == "camarero" && mesa.estado == EstadoMesa.OCUPADA) View.VISIBLE else View.GONE
+            
+            // Mostrar/ocultar panel de resumen de cuenta según el estado
+            binding.cardViewResumenCuenta.visibility = if (mesa.estado == EstadoMesa.OCUPADA) View.VISIBLE else View.GONE
+            
+            // Mostrar/ocultar tarjeta de reserva si la mesa está reservada
+            binding.cardViewReservaInfo.visibility = if (mesa.estado == EstadoMesa.RESERVADA) View.VISIBLE else View.GONE
+        }
+        
+        // Observar datos de la reserva activa
+        viewModel.reservaActiva.observe(viewLifecycleOwner) { reserva ->
+            if (reserva != null) {
+                // Mostrar la información de la reserva
+                binding.textViewClienteReserva.text = "Cliente: ${reserva.clienteNombre}"
+                binding.textViewHoraReserva.text = "Hora: ${reserva.hora}"
+                binding.textViewPersonasReserva.text = "Personas: ${reserva.numPersonas}"
+                
+                // Configurar botones de confirmación
+                binding.buttonClienteLlego.setOnClickListener {
+                    viewModel.confirmarLlegadaCliente()
+                }
+                
+                binding.buttonClienteNoLlego.setOnClickListener {
+                    viewModel.confirmarNoLlegadaCliente()
+                }
+                
+                binding.cardViewReservaInfo.visibility = View.VISIBLE
+            } else {
+                binding.cardViewReservaInfo.visibility = View.GONE
+            }
         }
         
         // Observar lista de pedidos
@@ -104,8 +135,18 @@ class DetalleMesaFragment : Fragment(), Refreshable {
             // Mostrar mensaje si no hay pedidos
             if (pedidos.isEmpty()) {
                 binding.textViewSinPedidos.visibility = View.VISIBLE
+                binding.cardViewResumenCuenta.visibility = View.GONE
             } else {
                 binding.textViewSinPedidos.visibility = View.GONE
+                
+                // Actualizar el resumen de la cuenta si la mesa está ocupada
+                val mesa = viewModel.mesa.value
+                if (mesa?.estado == EstadoMesa.OCUPADA) {
+                    binding.cardViewResumenCuenta.visibility = View.VISIBLE
+                    actualizarResumenCuenta()
+                } else {
+                    binding.cardViewResumenCuenta.visibility = View.GONE
+                }
             }
             
             // Ocultar indicador de refresco
@@ -134,13 +175,77 @@ class DetalleMesaFragment : Fragment(), Refreshable {
                 
                 // Esperar un poco antes de navegar de vuelta para que el usuario vea el Toast
                 Handler(requireContext().mainLooper).postDelayed({
-                    findNavController().navigateUp()
+                    // Verificar que el fragmento sigue adherido a la actividad antes de navegar
+                    if (isAdded && !isDetached() && view != null) {
+                        findNavController().navigateUp()
+                    }
                 }, 1800) // 1.8 segundos
             }
         }
         
         // Cargar datos de la mesa
-        viewModel.cargarDatosMesa()
+        viewModel.refreshData()
+    }
+    
+    /**
+     * Actualiza el panel de resumen de cuenta con los datos de los pedidos activos
+     */
+    private fun actualizarResumenCuenta() {
+        val pedidos = viewModel.pedidos.value ?: emptyList()
+        // Filtramos todos los pedidos que no están cancelados, no solo los activos
+        val pedidosValidos = pedidos.filter { 
+            it.estado != rjm.frontrestaurante.model.EstadoPedido.CANCELADO
+        }
+        
+        // Calcular total y generar resumen de la cuenta
+        var total = 0.0
+        val detallesCuenta = mutableListOf<String>()
+        
+        // Agrupar productos por nombre para mostrar una cuenta más clara
+        val productosAgrupados = mutableMapOf<String, Triple<Double, Int, String>>()
+        
+        pedidosValidos.forEach { pedido ->
+            pedido.detalles.forEach { detalle ->
+                val producto = detalle.producto
+                
+                // Añadir al resumen con nombre del producto si está disponible
+                if (producto != null) {
+                    val subtotal = detalle.cantidad * producto.precio
+                    total += subtotal
+                    
+                    // Agrupar los productos por nombre
+                    val key = producto.nombre
+                    if (productosAgrupados.containsKey(key)) {
+                        val (precio, cantidad, _) = productosAgrupados[key]!!
+                        productosAgrupados[key] = Triple(precio, cantidad + detalle.cantidad, producto.nombre)
+                    } else {
+                        productosAgrupados[key] = Triple(producto.precio, detalle.cantidad, producto.nombre)
+                    }
+                } else {
+                    android.util.Log.w("DetalleMesaFragment", "Producto nulo en detalle de pedido")
+                }
+            }
+        }
+        
+        // Crear líneas de detalle agrupadas
+        productosAgrupados.forEach { (key, value) ->
+            val (precio, cantidad, nombre) = value
+            val subtotal = precio * cantidad
+            val lineaDetalle = "$nombre x $cantidad = ${String.format("%.2f€", subtotal)}"
+            detallesCuenta.add(lineaDetalle)
+        }
+        
+        // Actualizar la vista con los datos
+        if (detallesCuenta.isNotEmpty()) {
+            binding.textViewResumenCuentaDetalles.text = detallesCuenta.joinToString("\n")
+            binding.textViewResumenTotal.text = "TOTAL: ${String.format("%.2f€", total)}"
+            binding.cardViewResumenCuenta.visibility = View.VISIBLE
+        } else {
+            binding.cardViewResumenCuenta.visibility = View.GONE
+        }
+        
+        // Log para depuración del total
+        android.util.Log.d("DetalleMesaFragment", "Total calculado: $total €")
     }
     
     /**
@@ -164,31 +269,92 @@ class DetalleMesaFragment : Fragment(), Refreshable {
      * Genera la cuenta final y cierra la mesa
      */
     private fun generarCuenta() {
-        // Calcular el total de todos los pedidos
         val pedidos = viewModel.pedidos.value ?: emptyList()
-        val total = pedidos.sumOf { it.total }
-        
-        // Preparar detalle de pedidos para mostrar en la cuenta
-        val pedidosDetalle = pedidos.joinToString("\n") { 
-            "• Pedido #${it.id}: ${String.format("%.2f€", it.total)}" 
+        // Filtramos todos los pedidos que no están cancelados, no solo los activos
+        val pedidosValidos = pedidos.filter { 
+            it.estado != rjm.frontrestaurante.model.EstadoPedido.CANCELADO
         }
         
-        // Mostrar el resumen de la cuenta
-        val formattedTotal = String.format("%.2f€", total)
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("Cuenta Final")
-            .setMessage("Resumen de pedidos:\n$pedidosDetalle\n\nTotal a pagar: $formattedTotal\n\n¿Confirma el pago?")
-            .setPositiveButton("Confirmar Pago") { _, _ ->
-                // Cerrar la mesa (cambiar estado a LIBRE)
-                viewModel.cerrarMesa()
-                Toast.makeText(context, "Cuenta cobrada: $formattedTotal. Servicio finalizado.", Toast.LENGTH_LONG).show()
+        // Si no hay pedidos válidos
+        if (pedidosValidos.isEmpty()) {
+            Toast.makeText(context, "No hay pedidos para cobrar", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        // Calcular total y generar resumen de la cuenta
+        var total = 0.0
+        val detallesCuenta = mutableListOf<String>()
+        
+        // Agrupar productos por nombre para mostrar una cuenta más clara
+        val productosAgrupados = mutableMapOf<String, Triple<Double, Int, String>>()
+        
+        pedidosValidos.forEach { pedido ->
+            pedido.detalles.forEach { detalle ->
+                val producto = detalle.producto
+                
+                // Añadir al resumen con nombre del producto si está disponible
+                if (producto != null) {
+                    val subtotal = detalle.cantidad * producto.precio
+                    total += subtotal
+                    
+                    // Agrupar los productos por nombre
+                    val key = producto.nombre
+                    if (productosAgrupados.containsKey(key)) {
+                        val (precio, cantidad, _) = productosAgrupados[key]!!
+                        productosAgrupados[key] = Triple(precio, cantidad + detalle.cantidad, producto.nombre)
+                    } else {
+                        productosAgrupados[key] = Triple(producto.precio, detalle.cantidad, producto.nombre)
+                    }
+                }
+            }
+        }
+        
+        // Crear líneas de detalle agrupadas
+        productosAgrupados.forEach { (key, value) ->
+            val (precio, cantidad, nombre) = value
+            val subtotal = precio * cantidad
+            val lineaDetalle = "$nombre x $cantidad = ${String.format("%.2f€", subtotal)}"
+            detallesCuenta.add(lineaDetalle)
+        }
+        
+        // Crear mensaje de cuenta
+        val mensajeBuilder = StringBuilder()
+        mensajeBuilder.append("CUENTA - Mesa ${viewModel.mesa.value?.numero}\n\n")
+        mensajeBuilder.append("DETALLES:\n")
+        detallesCuenta.forEach { detalle ->
+            mensajeBuilder.append("$detalle\n")
+        }
+        mensajeBuilder.append("\nTOTAL: ${String.format("%.2f€", total)}")
+        
+        // Mostrar diálogo con la cuenta y opciones de pago
+        val dialogView = layoutInflater.inflate(R.layout.dialog_cobro_cuenta, null)
+        val textViewResumenCuenta = dialogView.findViewById<TextView>(R.id.textViewResumenCuenta)
+        val radioGroupMetodoPago = dialogView.findViewById<RadioGroup>(R.id.radioGroupMetodoPago)
+        
+        textViewResumenCuenta.text = mensajeBuilder.toString()
+        
+        AlertDialog.Builder(requireContext())
+            .setTitle("Cobro de Cuenta")
+            .setView(dialogView)
+            .setPositiveButton("Cobrar") { _, _ ->
+                // Obtener método de pago seleccionado
+                val metodoPagoId = radioGroupMetodoPago.checkedRadioButtonId
+                val metodoPago = when (metodoPagoId) {
+                    R.id.radioButtonEfectivo -> "efectivo"
+                    R.id.radioButtonTarjeta -> "tarjeta"
+                    R.id.radioButtonMovil -> "móvil"
+                    else -> "efectivo" // por defecto
+                }
+                
+                // Al confirmar, cambiar estado de la mesa a libre
+                viewModel.cerrarMesa(metodoPago)
             }
             .setNegativeButton("Cancelar", null)
             .show()
     }
     
     override fun onRefresh() {
-        viewModel.cargarDatosMesa()
+        viewModel.refreshData()
     }
     
     override fun onDestroyView() {

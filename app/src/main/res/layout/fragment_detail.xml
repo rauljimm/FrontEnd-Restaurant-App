@@ -6,30 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".ui.detail.DetailFragment">
 
-    <ImageView
-        android:id="@+id/imageViewProducto"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:contentDescription="@string/product_detail"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@tools:sample/backgrounds/scenic" />
-
     <TextView
         android:id="@+id/textViewNombre"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="16dp"
         android:textColor="@color/text_primary"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewProducto"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="Nombre del Producto" />
 
     <TextView

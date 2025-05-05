@@ -3,6 +3,7 @@ package rjm.frontrestaurante.util
 import android.content.Context
 import android.content.SharedPreferences
 import rjm.frontrestaurante.RestauranteApp
+import rjm.frontrestaurante.util.AppPreferences
 
 /**
  * Gestor de sesión para manejar el token y los datos del usuario
@@ -84,6 +85,26 @@ object SessionManager {
      * Cierra la sesión, borrando todos los datos guardados
      */
     fun logout() {
-        prefs.edit().clear().apply()
+        // Limpiar todos los valores explícitamente antes de hacer clear()
+        prefs.edit()
+            .remove(KEY_TOKEN)
+            .remove(KEY_USER_ID)
+            .remove(KEY_USER_NAME)
+            .remove(KEY_USER_ROLE)
+            .clear()  // Asegurar que se limpian también las claves no listadas explícitamente
+            .apply()
+            
+        // Sincronizar con las preferencias de la aplicación
+        try {
+            val appPreferences = RestauranteApp.getInstance().preferences
+            appPreferences.clearPreferences()
+            appPreferences.setSecondLoginNeeded(false)
+            
+            // Verificar que realmente se han borrado los datos
+            android.util.Log.d("SessionManager", "Logout: Token=${getToken()}, UserId=${getUserId()}, Role=${getUserRole()}")
+        } catch (e: Exception) {
+            // Ignorar errores, solo para asegurar que no falla el logout
+            android.util.Log.e("SessionManager", "Error al sincronizar con AppPreferences", e)
+        }
     }
 } 

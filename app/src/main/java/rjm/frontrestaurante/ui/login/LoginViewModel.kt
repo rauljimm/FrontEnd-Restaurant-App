@@ -19,8 +19,11 @@ class LoginViewModel : ViewModel() {
     private val _loginState = MutableLiveData<LoginResult>()
     val loginState: LiveData<LoginResult> = _loginState
 
-    private val apiService = RestauranteApp.getInstance().apiService
-    private val preferences = RestauranteApp.getInstance().preferences
+    // Obtener la instancia de la aplicación y usar el método explícito
+    private val app = RestauranteApp.getInstance()
+    // Usar el método explícito en lugar de la propiedad
+    private val apiService = app.obtenerServicioAPI()
+    private val preferences = app.preferences
 
     /**
      * Realiza el inicio de sesión
@@ -34,23 +37,26 @@ class LoginViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                // Crear objeto de solicitud
-                val loginRequest = LoginRequest(username, password)
-                val response = apiService.login(loginRequest)
+                // Crear mapa de credenciales
+                val credentials = mapOf(
+                    "username" to username,
+                    "password" to password
+                )
+                val response = apiService.login(credentials)
                 
                 Log.d(TAG, "Respuesta del servidor: ${response.code()} - ${response.message()}")
                 
                 if (response.isSuccessful && response.body() != null) {
                     val loginResponse = response.body()!!
-                    Log.d(TAG, "Login exitoso. Token recibido: ${loginResponse.token.take(10)}...")
+                    Log.d(TAG, "Login exitoso. Token recibido: ${loginResponse.access_token.take(10)}...")
                     
                     // Guardar el token en ambas ubicaciones
-                    preferences.saveAuthToken(loginResponse.token)
-                    SessionManager.saveToken(loginResponse.token)
+                    preferences.saveAuthToken(loginResponse.access_token)
+                    SessionManager.saveToken(loginResponse.access_token)
                     
                     // Después de un login exitoso, cargaremos los datos del usuario
                     // con una llamada separada a /usuarios/me
-                    loadUserInfo(loginResponse.token)
+                    loadUserInfo(loginResponse.access_token)
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "Sin detalle"
                     Log.e(TAG, "Error de autenticación: ${response.code()} - $errorBody")
@@ -75,9 +81,9 @@ class LoginViewModel : ViewModel() {
             try {
                 val authToken = "Bearer $token"
                 Log.d(TAG, "Cargando información de usuario con token: Bearer ${token.take(10)}...")
-                val response = apiService.getUsuarioActual(authToken)
+                val response = apiService.getCurrentUser(authToken)
                 
-                Log.d(TAG, "Respuesta de getUsuarioActual: ${response.code()} - ${response.message()}")
+                Log.d(TAG, "Respuesta de getCurrentUser: ${response.code()} - ${response.message()}")
                 
                 if (response.isSuccessful && response.body() != null) {
                     val usuario = response.body()!!
@@ -86,7 +92,9 @@ class LoginViewModel : ViewModel() {
                     // Guardar información del usuario
                     preferences.saveUserId(usuario.id)
                     // Guardar el rol del usuario utilizando SessionManager
-                    SessionManager.saveUserInfo(usuario.id, usuario.nombreCompleto(), usuario.rol)
+                    // Concatenar nombre y apellido ya que esta clase Usuario no tiene el método nombreCompleto()
+                    val nombreCompleto = "${usuario.nombre} ${usuario.apellido}"
+                    SessionManager.saveUserInfo(usuario.id, nombreCompleto, usuario.rol)
                     // Establecer que no necesitamos un segundo intento de login
                     preferences.setSecondLoginNeeded(false)
                     

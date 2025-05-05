@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/textViewResumenCuenta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Cargando resumen..."
+            android:textSize="14sp" />
+
+    </ScrollView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Método de pago:"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupMetodoPago"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <RadioButton
+            android:id="@+id/radioButtonEfectivo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Efectivo" />
+
+        <RadioButton
+            android:id="@+id/radioButtonTarjeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tarjeta" />
+
+        <RadioButton
+            android:id="@+id/radioButtonMovil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pago móvil" />
+
+    </RadioGroup>
+
+</LinearLayout> 

@@ -20,47 +20,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroupNavigation"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewProductsTitle"
-        app:singleSelection="false">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipMesas"
-            style="@style/Widget.MaterialComponents.Chip.Action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mesas" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipPedidos"
-            style="@style/Widget.MaterialComponents.Chip.Action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pedidos" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipCategorias"
-            style="@style/Widget.MaterialComponents.Chip.Action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Categorías" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chipReservas"
-            style="@style/Widget.MaterialComponents.Chip.Action"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reservas" />
-    </com.google.android.material.chip.ChipGroup>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewProductos"
         android:layout_width="0dp"
@@ -71,7 +30,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chipGroupNavigation"
+        app:layout_constraintTop_toBottomOf="@+id/textViewProductsTitle"
         tools:listitem="@layout/item_producto" />
 
 </androidx.constraintlayout.widget.ConstraintLayout> 

@@ -36,7 +36,6 @@ class ProductoAdapter(private val onProductoClick: (Producto) -> Unit) :
      * ViewHolder para productos
      */
     class ProductoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val imageViewProducto: ImageView = itemView.findViewById(R.id.imageViewProducto)
         private val textViewNombre: TextView = itemView.findViewById(R.id.textViewNombre)
         private val textViewDescripcion: TextView = itemView.findViewById(R.id.textViewDescripcion)
         private val textViewPrecio: TextView = itemView.findViewById(R.id.textViewPrecio)
@@ -51,18 +50,6 @@ class ProductoAdapter(private val onProductoClick: (Producto) -> Unit) :
             textViewPrecio.text = formatoMoneda.format(producto.precio)
             
             textViewCategoria.text = "Categoría ${producto.categoriaId}"
-            
-            // Cargar imagen con Glide
-            producto.imagen?.let { url ->
-                Glide.with(itemView.context)
-                    .load(url)
-                    .placeholder(R.drawable.placeholder_producto)
-                    .error(R.drawable.error_producto)
-                    .into(imageViewProducto)
-            } ?: run {
-                // Si no hay imagen, mostrar placeholder
-                imageViewProducto.setImageResource(R.drawable.placeholder_producto)
-            }
         }
     }
 

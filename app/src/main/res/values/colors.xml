@@ -7,12 +7,14 @@
     <color name="primary_variant">#5C6BC0</color>
     <color name="accent">#FF5722</color>
     <color name="accent_dark">#E64A19</color>
+    <color name="colorPrimary">#3F51B5</color>
     
     <!-- Colores de sistema -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_background">#F5F5F5</color>
     <color name="divider">#BDBDBD</color>
+    <color name="gray_dark">#616161</color>
     
     <!-- Colores de texto -->
     <color name="text_primary">#212121</color>

@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,10 +31,13 @@ class AgregarProductoFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: ProductosViewModel
     private lateinit var categoriasViewModel: CategoriasViewModel
+    private val args: AgregarProductoFragmentArgs by navArgs()
     private val TAG = "AgregarProductoFragment"
     
     // Lista de categorías que se cargará desde la API
     private var categorias = listOf<Categoria>()
+    // ID del pedido si se está añadiendo a un pedido, -1 si se está creando un nuevo producto
+    private var pedidoId: Int = -1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,6 +50,13 @@ class AgregarProductoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Obtener el ID del pedido de los argumentos
+        pedidoId = args.pedidoId
+        
+        // Comprobar si estamos creando un producto (admin) o añadiendo a un pedido
+        val esCreacionProducto = pedidoId == -1
+        Log.d(TAG, "Modo: ${if (esCreacionProducto) "creación de producto" else "añadir a pedido"}")
         
         // Inicializar ViewModels
         viewModel = ViewModelProvider(this).get(ProductosViewModel::class.java)
