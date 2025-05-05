@@ -45,10 +45,6 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 - Actualización del estado de los pedidos
 - Notificación a camareros cuando los pedidos están listos
 
-## 🖼️ Capturas de pantalla
-
-[Aquí se incluirían capturas de pantalla de la aplicación]
-
 ## 🛠️ Tecnologías y bibliotecas
 
 - **Kotlin**: Lenguaje de programación principal
