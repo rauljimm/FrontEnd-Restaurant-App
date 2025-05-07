@@ -121,6 +121,12 @@ interface RestauranteApi {
         @Body producto: RequestBody
     ): Response<Producto>
 
+    @DELETE("productos/{id}")
+    suspend fun deleteProducto(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
+
     // Categorías
     @GET("categorias")
     suspend fun getCategorias(

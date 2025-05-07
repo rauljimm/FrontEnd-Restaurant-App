@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores base -->
-    <color name="primary">#3F51B5</color>
-    <color name="primary_dark">#303F9F</color>
-    <color name="primary_light">#C5CAE9</color>
-    <color name="primary_variant">#5C6BC0</color>
-    <color name="accent">#FF5722</color>
-    <color name="accent_dark">#E64A19</color>
-    <color name="colorPrimary">#3F51B5</color>
+    <!-- Colores base de Barauto -->
+    <color name="primary">#FF9D00</color> <!-- Naranja/amarillo del círculo de fondo -->
+    <color name="primary_dark">#D98300</color> <!-- Versión más oscura del naranja -->
+    <color name="primary_light">#FFEACC</color> <!-- Versión más clara del naranja -->
+    <color name="primary_variant">#FFBB45</color> <!-- Variante más clara del naranja -->
+    <color name="accent">#D32F2F</color> <!-- Rojo del chaleco/pajarita -->
+    <color name="accent_dark">#B71C1C</color> <!-- Rojo más oscuro -->
+    <color name="colorPrimary">#FF9D00</color> <!-- Para compatibilidad -->
+    
+    <!-- Colores de marca Barauto -->
+    <color name="barauto_brown">#3C1A0E</color> <!-- Marrón oscuro del texto Barauto -->
+    <color name="barauto_red">#D32F2F</color> <!-- Rojo de la pajarita -->
+    <color name="barauto_orange">#FF9D00</color> <!-- Naranja/amarillo del fondo -->
+    <color name="barauto_white">#FFFFFF</color> <!-- Blanco de la camisa -->
     
     <!-- Colores de sistema -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="light_background">#F5F5F5</color>
-    <color name="divider">#BDBDBD</color>
-    <color name="gray_dark">#616161</color>
+    <color name="light_background">#FFF8F0</color> <!-- Fondo claro con tono cálido -->
+    <color name="divider">#E0D0C0</color> <!-- Divisor con tono cálido -->
+    <color name="gray_dark">#5E4F44</color> <!-- Gris con tono marrón -->
     
     <!-- Colores de texto -->
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
+    <color name="text_primary">#3C1A0E</color> <!-- Marrón oscuro como el logo -->
+    <color name="text_secondary">#6E5A50</color> <!-- Marrón más claro -->
     
     <!-- Estados de Mesa -->
     <color name="mesa_libre">#81C784</color>    <!-- Verde -->
@@ -34,8 +40,8 @@
     <color name="pedido_cancelado">#EF9A9A</color> <!-- Rojo claro -->
     
     <!-- Estados de reserva -->
-    <color name="estado_pendiente">#FF9800</color>
-    <color name="estado_confirmado">#4CAF50</color>
-    <color name="estado_cancelado">#F44336</color>
-    <color name="estado_completado">#2196F3</color>
+    <color name="estado_pendiente">#FF9D00</color> <!-- Naranja Barauto -->
+    <color name="estado_confirmado">#4CAF50</color> <!-- Verde -->
+    <color name="estado_cancelado">#D32F2F</color> <!-- Rojo Barauto -->
+    <color name="estado_completado">#2196F3</color> <!-- Azul -->
 </resources>

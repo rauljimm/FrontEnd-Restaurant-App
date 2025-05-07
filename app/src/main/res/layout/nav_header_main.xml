@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="176dp"
-    android:background="@color/primary"
+    android:background="@color/barauto_orange"
     android:gravity="bottom"
     android:orientation="vertical"
     android:padding="16dp"
@@ -10,10 +10,10 @@
 
     <ImageView
         android:id="@+id/imageViewLogo"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_restaurant" />
+        android:src="@drawable/logo" />
 
     <TextView
         android:layout_width="match_parent"
@@ -22,13 +22,15 @@
         android:text="@string/app_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         android:textSize="18sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="@color/barauto_brown" />
 
     <TextView
         android:id="@+id/textViewUserName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text=""
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:textColor="@color/barauto_brown" />
 
 </LinearLayout> 

@@ -1,12 +1,11 @@
 package rjm.frontrestaurante.ui.pedidos
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import rjm.frontrestaurante.R
@@ -33,6 +32,7 @@ class DetallePedidoFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentDetallePedidoBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true) // Indicar que este fragmento tiene menú de opciones
         return binding.root
     }
 
@@ -159,6 +159,33 @@ class DetallePedidoFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        
+        // Solo agregar opción de añadir productos para administradores
+        if (userRole == "admin") {
+            menu.add(Menu.NONE, MENU_ADD_PRODUCT, Menu.NONE, "Agregar producto")
+                .setIcon(android.R.drawable.ic_menu_add)
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            MENU_ADD_PRODUCT -> {
+                // Navegar a la pantalla de agregar producto con el ID del pedido actual
+                val action = DetallePedidoFragmentDirections.actionDetallePedidoFragmentToAgregarProductoFragment(args.pedidoId)
+                findNavController().navigate(action)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    companion object {
+        private const val MENU_ADD_PRODUCT = 1 // ID para el ítem de menú
     }
 }
 

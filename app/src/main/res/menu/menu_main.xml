@@ -26,6 +26,14 @@
         app:showAsAction="never" />
     
     <item
+        android:id="@+id/action_historial_cuentas"
+        android:icon="@android:drawable/ic_menu_recent_history"
+        android:orderInCategory="275"
+        android:title="Historial de Cuentas"
+        android:visible="false"
+        app:showAsAction="never" />
+    
+    <item
         android:id="@+id/action_logout"
         android:icon="@drawable/ic_logout"
         android:orderInCategory="300"

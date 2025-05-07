@@ -59,7 +59,15 @@ class AppPreferences(context: Context) {
      * Limpia todas las preferencias (para logout)
      */
     fun clearPreferences() {
+        // Primero limpiar todas las preferencias
         prefs.edit().clear().apply()
+        
+        // Y luego establecer explícitamente cada valor a su estado inicial
+        prefs.edit()
+            .putString(KEY_AUTH_TOKEN, null)
+            .putInt(KEY_USER_ID, 0)
+            .putBoolean(KEY_SECOND_LOGIN_NEEDED, false)
+            .apply()
     }
     
     companion object {

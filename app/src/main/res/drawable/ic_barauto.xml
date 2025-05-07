@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Fondo circular naranja -->
+    <path
+        android:fillColor="@color/barauto_orange"
+        android:pathData="M50,50m-48,0a48,48 0,1 1,96 0a48,48 0,1 1,-96 0" />
+
+    <!-- Figura del camarero simplificada -->
+    <!-- Cabeza y cara -->
+    <path
+        android:fillColor="#FFC89D"
+        android:pathData="M40,30 C40,25 45,22 50,22 C55,22 60,25 60,30 C60,35 58,45 50,45 C42,45 40,35 40,30 Z" />
+    
+    <!-- Pelo -->
+    <path
+        android:fillColor="@color/barauto_brown"
+        android:pathData="M38,30 C38,22 45,20 50,20 C55,20 62,22 62,30 C62,35 60,40 58,42 C58,45 56,48 52,50 C50,51 49,51 48,50 C44,48 42,45 42,42 C40,40 38,35 38,30 Z" />
+
+    <!-- Sonrisa -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M45,36 C48,40 52,40 55,36 L45,36 Z" />
+    
+    <!-- Chaleco y pajarita -->
+    <path
+        android:fillColor="@color/barauto_red"
+        android:pathData="M42,48 L58,48 C62,48 64,52 66,60 C68,68 64,75 50,75 C36,75 32,68 34,60 C36,52 38,48 42,48 Z M48,42 L50,45 L52,42 L52,48 L48,48 Z" />
+</vector> 

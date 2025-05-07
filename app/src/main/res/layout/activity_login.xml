@@ -9,11 +9,11 @@
 
     <ImageView
         android:id="@+id/imageViewLogo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_marginTop="48dp"
         android:contentDescription="@string/app_name"
-        android:src="@drawable/logo_restaurante"
+        android:src="@drawable/logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

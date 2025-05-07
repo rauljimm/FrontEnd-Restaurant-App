@@ -85,13 +85,15 @@ object SessionManager {
      * Cierra la sesión, borrando todos los datos guardados
      */
     fun logout() {
-        // Limpiar todos los valores explícitamente antes de hacer clear()
+        // Primero, limpiar completamente las preferencias
+        prefs.edit().clear().apply()
+        
+        // Para mayor seguridad, asegurarnos que cada valor específico esté vacío
         prefs.edit()
-            .remove(KEY_TOKEN)
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_NAME)
-            .remove(KEY_USER_ROLE)
-            .clear()  // Asegurar que se limpian también las claves no listadas explícitamente
+            .putString(KEY_TOKEN, null)
+            .putInt(KEY_USER_ID, -1)
+            .putString(KEY_USER_NAME, "")
+            .putString(KEY_USER_ROLE, "")
             .apply()
             
         // Sincronizar con las preferencias de la aplicación

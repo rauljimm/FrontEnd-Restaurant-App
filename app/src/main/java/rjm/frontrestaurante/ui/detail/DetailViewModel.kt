@@ -16,6 +16,9 @@ class DetailViewModel(private val productoId: Int) : ViewModel() {
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
+    
+    private val _productoEliminado = MutableLiveData<Boolean>()
+    val productoEliminado: LiveData<Boolean> = _productoEliminado
 
     private val apiService = RestauranteApp.getInstance().apiService
     private val database = RestauranteApp.getInstance().database
@@ -39,6 +42,28 @@ class DetailViewModel(private val productoId: Int) : ViewModel() {
                 }
             } catch (e: Exception) {
                 _error.value = "Error de conexión: ${e.message}"
+            }
+        }
+    }
+    
+    /**
+     * Elimina el producto actual
+     */
+    fun eliminarProducto() {
+        viewModelScope.launch {
+            try {
+                val token = "Bearer ${preferences.getAuthToken()}"
+                val response = apiService.deleteProducto(token, productoId)
+                
+                if (response.isSuccessful) {
+                    _productoEliminado.value = true
+                } else {
+                    _error.value = "Error al eliminar el producto: ${response.message()}"
+                    _productoEliminado.value = false
+                }
+            } catch (e: Exception) {
+                _error.value = "Error de conexión al eliminar: ${e.message}"
+                _productoEliminado.value = false
             }
         }
     }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -49,6 +50,13 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
         
+        // Añadir listener para detectar cambios de destino de navegación
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            Log.d(TAG, "Navegación a: ${destination.label}")
+            // Forzar actualización del menú cuando cambia el destino
+            invalidateOptionsMenu()
+        }
+        
         // Obtener el rol del usuario
         userRole = SessionManager.getUserRole()
         Log.d(TAG, "Rol de usuario: $userRole, Token: ${SessionManager.getToken()?.take(10) ?: "null"}")
@@ -85,6 +93,24 @@ class MainActivity : AppCompatActivity() {
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close
             )
             drawer.addDrawerListener(drawerToggle)
+            
+            // Añadir listener para actualizar el menú siempre que se abra el drawer
+            drawer.addDrawerListener(object : DrawerLayout.DrawerListener {
+                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}
+                
+                override fun onDrawerOpened(drawerView: View) {
+                    // Actualizar el menú cada vez que se abre el drawer
+                    binding.navView?.let { navView ->
+                        configureNavigationMenu(navView)
+                    }
+                    Log.d(TAG, "Drawer abierto: Menú actualizado con rol actual")
+                }
+                
+                override fun onDrawerClosed(drawerView: View) {}
+                
+                override fun onDrawerStateChanged(newState: Int) {}
+            })
+            
             drawerToggle.syncState()
             
             setupActionBarWithNavController(navController, appBarConfiguration)
@@ -92,35 +118,10 @@ class MainActivity : AppCompatActivity() {
             
             // Configurar acciones adicionales del menú
             binding.navView?.let { navView ->
-                // Configurar visibilidad de elementos del menú según el rol
-                val menu = navView.menu
-                when (userRole) {
-                    "admin" -> {
-                        // Administrador ve productos, categorías, cuentas, mesas y reservas
-                        menu.findItem(R.id.nav_productos)?.isVisible = true
-                        menu.findItem(R.id.nav_mesas)?.isVisible = true
-                        menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
-                        menu.findItem(R.id.nav_cuentas)?.isVisible = true
-                        menu.findItem(R.id.nav_reservas)?.isVisible = true
-                    }
-                    "camarero" -> {
-                        // Camarero ve mesas, pedidos activos, productos y reservas
-                        menu.findItem(R.id.nav_productos)?.isVisible = true
-                        menu.findItem(R.id.nav_mesas)?.isVisible = true
-                        menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
-                        menu.findItem(R.id.nav_cuentas)?.isVisible = false
-                        menu.findItem(R.id.nav_reservas)?.isVisible = true
-                    }
-                    "cocinero" -> {
-                        // Cocinero ve solo pedidos activos
-                        menu.findItem(R.id.nav_productos)?.isVisible = false
-                        menu.findItem(R.id.nav_mesas)?.isVisible = false
-                        menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
-                        menu.findItem(R.id.nav_cuentas)?.isVisible = false
-                        menu.findItem(R.id.nav_reservas)?.isVisible = false
-                    }
-                }
+                // Configurar visibilidad de elementos del menú según el rol actual
+                configureNavigationMenu(navView)
                 
+                // Listener para elementos del menú
                 navView.setNavigationItemSelectedListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.nav_productos -> {
@@ -195,15 +196,39 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
         
-        // Mostrar opciones adicionales para administradores
-        if (::userRole.isInitialized && userRole == "admin") {
-            menu?.findItem(R.id.action_add_producto)?.isVisible = true
-            menu?.findItem(R.id.action_add_mesa)?.isVisible = true
-            Log.d(TAG, "Mostrando opciones de administrador en el menú")
-        } else {
-            menu?.findItem(R.id.action_add_producto)?.isVisible = false
-            menu?.findItem(R.id.action_add_mesa)?.isVisible = false
-            Log.d(TAG, "Ocultando opciones de administrador en el menú. Rol actual: $userRole")
+        // Obtener el rol de usuario actualizado directamente desde SessionManager
+        val currentRole = SessionManager.getUserRole()
+        Log.d(TAG, "onCreateOptionsMenu - Rol de usuario actual: $currentRole")
+        
+        // Configurar visibilidad de las opciones según el rol
+        when (currentRole) {
+            "admin" -> {
+                // Admin ve todas las opciones
+                menu?.findItem(R.id.action_refresh)?.isVisible = true
+                menu?.findItem(R.id.action_add_producto)?.isVisible = true
+                menu?.findItem(R.id.action_add_mesa)?.isVisible = true
+                menu?.findItem(R.id.action_historial_cuentas)?.isVisible = true
+                menu?.findItem(R.id.action_logout)?.isVisible = true
+                Log.d(TAG, "Mostrando opciones de administrador en el menú")
+            }
+            "camarero" -> {
+                // Camarero solo ve cerrar sesión y refrescar
+                menu?.findItem(R.id.action_refresh)?.isVisible = true
+                menu?.findItem(R.id.action_add_producto)?.isVisible = false
+                menu?.findItem(R.id.action_add_mesa)?.isVisible = false
+                menu?.findItem(R.id.action_historial_cuentas)?.isVisible = false
+                menu?.findItem(R.id.action_logout)?.isVisible = true
+                Log.d(TAG, "Mostrando opciones limitadas para camarero")
+            }
+            else -> {
+                // Otros roles (como cocinero) solo ven cerrar sesión y refrescar
+                menu?.findItem(R.id.action_refresh)?.isVisible = true
+                menu?.findItem(R.id.action_add_producto)?.isVisible = false
+                menu?.findItem(R.id.action_add_mesa)?.isVisible = false
+                menu?.findItem(R.id.action_historial_cuentas)?.isVisible = false
+                menu?.findItem(R.id.action_logout)?.isVisible = true
+                Log.d(TAG, "Ocultando opciones administrativas. Rol actual: $currentRole")
+            }
         }
         
         return true
@@ -244,6 +269,12 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.nuevaMesaFragment)
                 true
             }
+            R.id.action_historial_cuentas -> {
+                // Navegar al fragmento de historial de cuentas (solo admin)
+                navController.navigate(R.id.cuentasFragment)
+                Log.d(TAG, "Navegando al fragmento de historial de cuentas")
+                true
+            }
             R.id.action_logout -> {
                 // Cierra sesión y navega al login usando la acción global
                 viewModel.cerrarSesion()
@@ -255,6 +286,42 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+    
+    /**
+     * Configura el menú de navegación según el rol actual del usuario
+     */
+    private fun configureNavigationMenu(navView: NavigationView) {
+        val currentRole = SessionManager.getUserRole()
+        Log.d(TAG, "Configurando menú de navegación para rol: $currentRole")
+        
+        val menu = navView.menu
+        when (currentRole) {
+            "admin" -> {
+                // Administrador ve productos, categorías, cuentas, mesas y reservas
+                menu.findItem(R.id.nav_productos)?.isVisible = true
+                menu.findItem(R.id.nav_mesas)?.isVisible = true
+                menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                menu.findItem(R.id.nav_cuentas)?.isVisible = true
+                menu.findItem(R.id.nav_reservas)?.isVisible = true
+            }
+            "camarero" -> {
+                // Camarero ve mesas, pedidos activos, productos y reservas
+                menu.findItem(R.id.nav_productos)?.isVisible = true
+                menu.findItem(R.id.nav_mesas)?.isVisible = true
+                menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                menu.findItem(R.id.nav_cuentas)?.isVisible = false
+                menu.findItem(R.id.nav_reservas)?.isVisible = true
+            }
+            "cocinero" -> {
+                // Cocinero ve solo pedidos activos
+                menu.findItem(R.id.nav_productos)?.isVisible = false
+                menu.findItem(R.id.nav_mesas)?.isVisible = false
+                menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                menu.findItem(R.id.nav_cuentas)?.isVisible = false
+                menu.findItem(R.id.nav_reservas)?.isVisible = false
+            }
         }
     }
 }
