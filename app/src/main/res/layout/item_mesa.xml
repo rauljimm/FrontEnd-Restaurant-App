@@ -14,13 +14,22 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <ImageView
+            android:id="@+id/iconUbicacion"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/ic_table" />
+
         <TextView
             android:id="@+id/textViewNumeroMesa"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceHeadline6"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iconUbicacion"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Mesa 1" />
@@ -37,6 +46,17 @@
             tools:text="Capacidad: 4 personas" />
 
         <TextView
+            android:id="@+id/textViewUbicacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewCapacidad"
+            tools:text="Ubicación: Terraza" />
+
+        <TextView
             android:id="@+id/textViewEstado"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -45,7 +65,7 @@
             android:textStyle="italic"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewCapacidad"
+            app:layout_constraintTop_toBottomOf="@+id/textViewUbicacion"
             tools:text="Estado: Libre" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

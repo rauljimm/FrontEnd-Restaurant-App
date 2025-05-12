@@ -95,7 +95,26 @@ class PedidosActivosFragment : Fragment(), Refreshable {
         // Observar errores
         viewModel.error.observe(viewLifecycleOwner) { mensaje ->
             if (mensaje.isNotEmpty()) {
-                Toast.makeText(requireContext(), mensaje, Toast.LENGTH_LONG).show()
+                // Loguear el error completo
+                android.util.Log.e("PedidosActivosFragment", "Error desde ViewModel: $mensaje")
+                
+                // Simplificar el mensaje para el usuario
+                val mensajeSimplificado = if (mensaje.contains("500")) {
+                    "Error en el servidor. El administrador está investigando el problema."
+                } else if (mensaje.contains("Error de conexión")) {
+                    "Error de conexión. Compruebe su conexión a internet."
+                } else {
+                    mensaje.split("\n").firstOrNull() ?: mensaje
+                }
+                
+                // Mostrar mensaje al usuario
+                Toast.makeText(requireContext(), mensajeSimplificado, Toast.LENGTH_LONG).show()
+                
+                // Mostrar un mensaje de error en la UI
+                binding.textViewEmpty.text = "No se pudieron cargar los pedidos\n${mensajeSimplificado}"
+                binding.textViewEmpty.visibility = View.VISIBLE
+                binding.recyclerViewPedidos.visibility = View.GONE
+                
                 binding.swipeRefreshLayout.isRefreshing = false
             }
         }

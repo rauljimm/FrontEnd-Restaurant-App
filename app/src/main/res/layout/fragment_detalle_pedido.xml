@@ -107,21 +107,53 @@
         android:layout_marginBottom="16dp"
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/buttonActualizarEstado"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="Total: 25.50€" />
 
-    <Button
-        android:id="@+id/buttonActualizarEstado"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:id="@+id/linearLayoutButtons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="@string/action_mark_ready"
+        android:orientation="vertical"
+        android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent">
+        
+        <Button
+            android:id="@+id/buttonActualizarEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:text="@string/action_mark_ready"
+            android:visibility="gone"
+            tools:visibility="visible" />
+            
+        <Button
+            android:id="@+id/buttonActualizarPedido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:text="Añadir productos al pedido"
+            android:drawableStart="@android:drawable/ic_menu_add"
+            android:drawablePadding="8dp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+            
+        <Button
+            android:id="@+id/buttonEliminarPedido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:text="Eliminar pedido"
+            android:drawableStart="@android:drawable/ic_menu_delete"
+            android:drawablePadding="8dp"
+            android:backgroundTint="@color/design_default_color_error"
+            android:textColor="@android:color/white"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/progressBar"

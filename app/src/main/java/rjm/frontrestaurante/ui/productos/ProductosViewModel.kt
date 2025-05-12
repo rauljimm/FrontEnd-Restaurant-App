@@ -12,6 +12,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import rjm.frontrestaurante.api.ApiClient
 import rjm.frontrestaurante.api.ApiService
+import rjm.frontrestaurante.api.RestauranteApi
+import rjm.frontrestaurante.api.RetrofitClient
+import rjm.frontrestaurante.model.Producto
 import rjm.frontrestaurante.util.SessionManager
 import java.io.IOException
 
@@ -25,10 +28,47 @@ class ProductosViewModel : ViewModel() {
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> get() = _error
+    
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> = _isLoading
+    
+    private val _productos = MutableLiveData<List<Producto>>()
+    val productos: LiveData<List<Producto>> = _productos
 
     // Obtener instancia de ApiService
     private val apiService: ApiService = ApiClient.crearApiService()
+    private val retrofitApi = RetrofitClient.getClient().create(RestauranteApi::class.java)
     private val TAG = "ProductosViewModel"
+
+    /**
+     * Carga la lista de productos desde la API
+     */
+    fun cargarProductos() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val token = SessionManager.getToken()
+                if (token.isNullOrEmpty()) {
+                    _error.value = "No se ha iniciado sesión"
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val response = retrofitApi.getProductos("Bearer $token")
+                if (response.isSuccessful && response.body() != null) {
+                    _productos.value = response.body()!!
+                } else {
+                    _error.value = "Error: ${response.code()} - ${response.message()}"
+                }
+            } catch (e: IOException) {
+                _error.value = "Error de conexión: ${e.message}"
+            } catch (e: Exception) {
+                _error.value = "Error: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     /**
      * Crea un nuevo producto

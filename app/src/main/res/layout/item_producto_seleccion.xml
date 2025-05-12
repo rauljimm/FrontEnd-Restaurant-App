@@ -4,60 +4,101 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="4dp"
+    android:layout_marginVertical="4dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <TextView
             android:id="@+id/textViewNombreProducto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textAppearance="?attr/textAppearanceHeadline6"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/textViewPrecioProducto"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="Nombre del producto" />
+            tools:text="Hamburguesa completa" />
 
         <TextView
             android:id="@+id/textViewDescripcionProducto"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:ellipsize="end"
             android:maxLines="2"
-            app:layout_constraintEnd_toStartOf="@+id/buttonAgregarProducto"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toStartOf="@+id/textViewPrecioProducto"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewNombreProducto"
-            tools:text="Descripción del producto que puede ser bastante larga y ocupar varias líneas" />
+            tools:text="Deliciosa hamburguesa con queso, lechuga, tomate y salsas especiales" />
 
         <TextView
             android:id="@+id/textViewPrecioProducto"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:textColor="@color/design_default_color_primary"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="9.99€" />
+            tools:text="9.95€" />
+
+        <LinearLayout
+            android:id="@+id/layoutCantidad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textViewDescripcionProducto">
+
+            <Button
+                android:id="@+id/buttonDecrementar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:text="-"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textViewCantidad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:text="1"
+                android:textAppearance="?attr/textAppearanceSubtitle1"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/buttonIncrementar"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                android:text="+"
+                android:textSize="18sp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/buttonAgregarProducto"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/action_add"
-            app:icon="@android:drawable/ic_menu_add"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:text="Añadir"
+            app:icon="@android:drawable/ic_input_add"
+            app:layout_constraintBottom_toBottomOf="@+id/layoutCantidad"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textViewPrecioProducto" />
+            app:layout_constraintTop_toTopOf="@+id/layoutCantidad" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView> 

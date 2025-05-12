@@ -28,6 +28,12 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+    
+    <!-- Splash Screen Theme -->
+    <style name="Theme.FrontRestaurante.Splash" parent="Theme.FrontRestaurante.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+    </style>
 
     <style name="Theme.FrontRestaurante.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 

@@ -21,6 +21,9 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var buttonLogin: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Cambiar el tema de splash al tema normal
+        setTheme(R.style.Theme_FrontRestaurante)
+        
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 

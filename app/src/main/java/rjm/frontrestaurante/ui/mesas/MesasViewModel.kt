@@ -46,9 +46,9 @@ class MesasViewModel : ViewModel() {
                 
                 val response = api.getMesas("Bearer $token")
                 if (response.isSuccessful) {
-                    _mesas.value = response.body() ?: emptyList()
+                    _mesas.value = response.body()
                 } else {
-                    _error.value = "Error: ${response.code()} - ${response.message()}"
+                    _error.value = "Error al cargar mesas: ${response.code()} - ${response.message()}"
                 }
             } catch (e: IOException) {
                 _error.value = "Error de conexión: ${e.message}"
@@ -63,7 +63,11 @@ class MesasViewModel : ViewModel() {
     /**
      * Crea una nueva mesa
      */
-    fun crearMesa(numero: Int, capacidad: Int, ubicacion: String) {
+    fun crearMesa(
+        numero: Int, 
+        capacidad: Int,
+        ubicacion: String = ""
+    ) {
         viewModelScope.launch {
             try {
                 val token = SessionManager.getToken()
@@ -76,7 +80,9 @@ class MesasViewModel : ViewModel() {
                 val mesaJson = JSONObject().apply {
                     put("numero", numero)
                     put("capacidad", capacidad)
-                    put("ubicacion", ubicacion)
+                    if (ubicacion.isNotEmpty()) {
+                        put("ubicacion", ubicacion)
+                    }
                 }
                 
                 Log.d(TAG, "Enviando mesa: ${mesaJson.toString()}")
@@ -106,6 +112,98 @@ class MesasViewModel : ViewModel() {
                 Log.e(TAG, "Error inesperado: ${e.message}")
                 _error.value = "Error inesperado: ${e.message}"
                 _resultado.value = false
+            }
+        }
+    }
+    
+    /**
+     * Actualiza una mesa existente
+     */
+    fun actualizarMesa(
+        id: Int,
+        numero: Int,
+        capacidad: Int,
+        ubicacion: String = ""
+    ) {
+        viewModelScope.launch {
+            try {
+                val token = SessionManager.getToken()
+                if (token.isNullOrEmpty()) {
+                    _error.value = "No se ha iniciado sesión"
+                    return@launch
+                }
+                
+                // Crear JSON para enviar al API
+                val mesaJson = JSONObject().apply {
+                    put("numero", numero)
+                    put("capacidad", capacidad)
+                    if (ubicacion.isNotEmpty()) {
+                        put("ubicacion", ubicacion)
+                    }
+                }
+                
+                Log.d(TAG, "Actualizando mesa $id: ${mesaJson.toString()}")
+                
+                val jsonString = mesaJson.toString()
+                val requestBody = jsonString.toRequestBody("application/json".toMediaTypeOrNull())
+                
+                // Llamar al API
+                val response = api.updateMesa("Bearer $token", id, requestBody)
+                
+                if (response.isSuccessful) {
+                    Log.d(TAG, "Mesa actualizada correctamente")
+                    _resultado.value = true
+                    // Recargar la lista de mesas
+                    cargarMesas()
+                } else {
+                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
+                    Log.e(TAG, "Error al actualizar mesa: $errorBody")
+                    _error.value = "Error al actualizar mesa: $errorBody"
+                    _resultado.value = false
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "Error de conexión: ${e.message}")
+                _error.value = "Error de conexión. Compruebe su conexión a internet."
+                _resultado.value = false
+            } catch (e: Exception) {
+                Log.e(TAG, "Error inesperado: ${e.message}")
+                _error.value = "Error inesperado: ${e.message}"
+                _resultado.value = false
+            }
+        }
+    }
+    
+    /**
+     * Elimina una mesa
+     */
+    fun eliminarMesa(mesaId: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val token = SessionManager.getToken()
+                if (token.isNullOrEmpty()) {
+                    _error.value = "No se ha iniciado sesión"
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val response = api.deleteMesa("Bearer $token", mesaId)
+                if (response.isSuccessful) {
+                    _resultado.value = true
+                    // Recargar la lista de mesas
+                    cargarMesas()
+                } else {
+                    _error.value = "Error al eliminar mesa: ${response.code()} - ${response.message()}"
+                    _resultado.value = false
+                }
+            } catch (e: IOException) {
+                _error.value = "Error de conexión: ${e.message}"
+                _resultado.value = false
+            } catch (e: Exception) {
+                _error.value = "Error: ${e.message}"
+                _resultado.value = false
+            } finally {
+                _isLoading.value = false
             }
         }
     }

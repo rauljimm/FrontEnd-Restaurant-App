@@ -47,6 +47,9 @@
             android:id="@+id/action_mesasFragment_to_detalleMesaFragment"
             app:destination="@id/detalleMesaFragment" />
         <action
+            android:id="@+id/action_mesasFragment_to_editarMesaFragment"
+            app:destination="@id/editarMesaFragment" />
+        <action
             android:id="@+id/action_mesasFragment_to_nuevaMesaFragment"
             app:destination="@id/nuevaMesaFragment" />
     </fragment>
@@ -71,12 +74,15 @@
     </fragment>
     
     <fragment
-        android:id="@+id/nuevaMesaFragment"
-        android:name="rjm.frontrestaurante.ui.mesas.NuevaMesaFragment"
-        android:label="@string/title_nueva_mesa"
+        android:id="@+id/editarMesaFragment"
+        android:name="rjm.frontrestaurante.ui.mesas.EditarMesaFragment"
+        android:label="@string/title_editar_mesa"
         tools:layout="@layout/fragment_nueva_mesa">
+        <argument
+            android:name="mesaId"
+            app:argType="integer" />
         <action
-            android:id="@+id/action_nuevaMesaFragment_to_mesasFragment"
+            android:id="@+id/action_editarMesaFragment_to_mesasFragment"
             app:destination="@id/mesasFragment"
             app:popUpTo="@id/mesasFragment"
             app:popUpToInclusive="true" />
@@ -92,6 +98,13 @@
             app:argType="integer" />
     </fragment>
 
+    <!-- Fragmento para crear una nueva mesa (solo para administradores) -->
+    <fragment
+        android:id="@+id/nuevaMesaFragment"
+        android:name="rjm.frontrestaurante.ui.mesas.NuevaMesaFragment"
+        android:label="@string/title_nueva_mesa"
+        tools:layout="@layout/fragment_nueva_mesa" />
+
     <fragment
         android:id="@+id/detallePedidoFragment"
         android:name="rjm.frontrestaurante.ui.pedidos.DetallePedidoFragment"
@@ -103,6 +116,9 @@
         <action
             android:id="@+id/action_detallePedidoFragment_to_agregarProductoFragment"
             app:destination="@id/agregarProductoFragment" />
+        <action
+            android:id="@+id/action_detallePedidoFragment_to_seleccionarProductoFragment"
+            app:destination="@id/seleccionarProductoFragment" />
     </fragment>
 
     <fragment
@@ -117,6 +133,16 @@
         <action
             android:id="@+id/action_agregarProductoFragment_to_nuevaCategoriaFragment"
             app:destination="@id/nuevaCategoriaFragment" />
+    </fragment>
+    
+    <fragment
+        android:id="@+id/seleccionarProductoFragment"
+        android:name="rjm.frontrestaurante.ui.productos.SeleccionarProductoFragment"
+        android:label="Seleccionar Producto"
+        tools:layout="@layout/fragment_seleccionar_producto">
+        <argument
+            android:name="pedidoId"
+            app:argType="integer" />
     </fragment>
 
     <fragment
@@ -210,5 +236,12 @@
             android:name="cuentaId"
             app:argType="integer" />
     </fragment>
+    
+    <!-- Fragmento de gestión de usuarios (solo para administradores) -->
+    <fragment
+        android:id="@+id/usuariosFragment"
+        android:name="rjm.frontrestaurante.ui.usuarios.UsuariosFragment"
+        android:label="@string/usuarios_title"
+        tools:layout="@layout/fragment_usuarios" />
 
 </navigation> 

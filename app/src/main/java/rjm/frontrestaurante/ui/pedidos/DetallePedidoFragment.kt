@@ -53,6 +53,12 @@ class DetallePedidoFragment : Fragment() {
         // Configurar botón de actualizar estado según el rol
         setupButtonByRole()
         
+        // Configurar botón de eliminar pedido (solo visible para admin y camareros)
+        setupDeleteButton()
+        
+        // Configurar botón de actualizar pedido (solo visible para admin y camareros)
+        setupUpdateButton()
+        
         // Observar datos del pedido
         viewModel.pedido.observe(viewLifecycleOwner) { pedido ->
             // Actualizar UI con los datos del pedido
@@ -84,6 +90,19 @@ class DetallePedidoFragment : Fragment() {
             // Mostrar total
             binding.textViewTotal.text = getString(R.string.total, pedido.total)
             
+            // Configurar adaptador con funcionalidades de edición para admins y camareros
+            detallesAdapter.setup(
+                pedidoId = pedido.id.toLong(), 
+                userRole = userRole,
+                pedidoEstado = pedido.estado,
+                onUpdate = { detalle, nuevaCantidad ->
+                    viewModel.actualizarCantidadProducto(detalle.id, nuevaCantidad)
+                },
+                onDelete = { detalle ->
+                    viewModel.eliminarProductoDePedido(detalle.id)
+                }
+            )
+            
             // Actualizar lista de detalles
             detallesAdapter.submitList(pedido.detalles)
             
@@ -98,6 +117,7 @@ class DetallePedidoFragment : Fragment() {
             
             // Actualizar visibilidad del botón según el estado del pedido y el rol
             updateButtonVisibility(pedido.estado)
+            updateDeleteButtonVisibility(pedido.estado)
         }
         
         // Observar mensajes de error
@@ -112,6 +132,15 @@ class DetallePedidoFragment : Fragment() {
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
         
+        // Observar evento de pedido eliminado
+        viewModel.pedidoEliminado.observe(viewLifecycleOwner) { eliminado ->
+            if (eliminado) {
+                Toast.makeText(context, "Pedido eliminado correctamente", Toast.LENGTH_SHORT).show()
+                // Volver a la pantalla anterior
+                findNavController().navigateUp()
+            }
+        }
+        
         // Cargar datos del pedido
         viewModel.cargarPedido()
     }
@@ -123,12 +152,14 @@ class DetallePedidoFragment : Fragment() {
                 binding.buttonActualizarEstado.setOnClickListener {
                     viewModel.actualizarEstadoPedido(EstadoPedido.LISTO)
                 }
+                binding.buttonActualizarEstado.visibility = View.VISIBLE
             }
             "camarero" -> {
                 binding.buttonActualizarEstado.text = getString(R.string.action_mark_delivered)
                 binding.buttonActualizarEstado.setOnClickListener {
                     viewModel.actualizarEstadoPedido(EstadoPedido.ENTREGADO)
                 }
+                binding.buttonActualizarEstado.visibility = View.VISIBLE
             }
             else -> {
                 binding.buttonActualizarEstado.visibility = View.GONE
@@ -154,6 +185,47 @@ class DetallePedidoFragment : Fragment() {
                 View.GONE
             }
         }
+        
+        // Actualizar visibilidad del botón de actualizar pedido
+        binding.buttonActualizarPedido.visibility = when {
+            (userRole == "admin" || userRole == "camarero") && 
+            estadoPedido != EstadoPedido.ENTREGADO && 
+            estadoPedido != EstadoPedido.CANCELADO -> View.VISIBLE
+            else -> View.GONE
+        }
+    }
+
+    private fun setupDeleteButton() {
+        if (userRole == "admin" || userRole == "camarero") {
+            binding.buttonEliminarPedido.setOnClickListener {
+                // Mostrar diálogo de confirmación
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Eliminar pedido")
+                    .setMessage("¿Estás seguro de que deseas eliminar este pedido?")
+                    .setPositiveButton("Sí") { _, _ ->
+                        viewModel.eliminarPedido()
+                    }
+                    .setNegativeButton("No", null)
+                    .show()
+            }
+        } else {
+            binding.buttonEliminarPedido.visibility = View.GONE
+        }
+    }
+    
+    private fun setupUpdateButton() {
+        binding.buttonActualizarPedido.setOnClickListener {
+            // Navegar a la pantalla de selección de productos para añadir al pedido
+            val action = DetallePedidoFragmentDirections.actionDetallePedidoFragmentToSeleccionarProductoFragment(args.pedidoId)
+            findNavController().navigate(action)
+        }
+    }
+
+    private fun updateDeleteButtonVisibility(estadoPedido: EstadoPedido) {
+        binding.buttonEliminarPedido.visibility = when {
+            (userRole == "admin" || userRole == "camarero") && estadoPedido != EstadoPedido.ENTREGADO -> View.VISIBLE
+            else -> View.GONE
+        }
     }
 
     override fun onDestroyView() {
@@ -164,24 +236,12 @@ class DetallePedidoFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         
-        // Solo agregar opción de añadir productos para administradores
-        if (userRole == "admin") {
-            menu.add(Menu.NONE, MENU_ADD_PRODUCT, Menu.NONE, "Agregar producto")
-                .setIcon(android.R.drawable.ic_menu_add)
-                .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-        }
+        // Ya no necesitamos este menú, ya que ahora tenemos un botón principal
+        // para añadir productos al pedido
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            MENU_ADD_PRODUCT -> {
-                // Navegar a la pantalla de agregar producto con el ID del pedido actual
-                val action = DetallePedidoFragmentDirections.actionDetallePedidoFragmentToAgregarProductoFragment(args.pedidoId)
-                findNavController().navigate(action)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        return super.onOptionsItemSelected(item)
     }
 
     companion object {
@@ -198,6 +258,21 @@ class DetallesPedidoAdapter : androidx.recyclerview.widget.ListAdapter<DetallePe
         override fun areContentsTheSame(oldItem: DetallePedido, newItem: DetallePedido) = oldItem == newItem
     }
 ) {
+    private var pedidoId: Long = 0
+    private var userRole: String = ""
+    private var pedidoEstado: EstadoPedido = EstadoPedido.RECIBIDO
+    private var onItemUpdate: ((DetallePedido, Int) -> Unit)? = null
+    private var onItemDelete: ((DetallePedido) -> Unit)? = null
+    
+    fun setup(pedidoId: Long, userRole: String, pedidoEstado: EstadoPedido, 
+              onUpdate: (DetallePedido, Int) -> Unit, 
+              onDelete: (DetallePedido) -> Unit) {
+        this.pedidoId = pedidoId
+        this.userRole = userRole
+        this.pedidoEstado = pedidoEstado
+        this.onItemUpdate = onUpdate
+        this.onItemDelete = onDelete
+    }
     
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DetalleViewHolder {
         val binding = rjm.frontrestaurante.databinding.ItemDetallePedidoBinding.inflate(
@@ -257,6 +332,51 @@ class DetallesPedidoAdapter : androidx.recyclerview.widget.ListAdapter<DetallePe
                     textViewObservacionesDetalle.visibility = View.VISIBLE
                 } else {
                     textViewObservacionesDetalle.visibility = View.GONE
+                }
+                
+                // Configurar botones para editar y eliminar (solo para admin y camareros)
+                // y si el pedido no está entregado ni cancelado
+                if ((userRole == "admin" || userRole == "camarero") && 
+                    pedidoEstado != EstadoPedido.ENTREGADO && 
+                    pedidoEstado != EstadoPedido.CANCELADO) {
+                    
+                    // Hacer visibles los controles de edición
+                    layoutControlesEdicion.visibility = View.VISIBLE
+                    
+                    // Configurar botones de incremento/decremento
+                    buttonDecrementar.setOnClickListener {
+                        if (detalle.cantidad > 1) {
+                            onItemUpdate?.invoke(detalle, detalle.cantidad - 1)
+                        } else {
+                            // Si la cantidad llega a 0, preguntar si desea eliminar
+                            androidx.appcompat.app.AlertDialog.Builder(root.context)
+                                .setTitle("Eliminar producto")
+                                .setMessage("¿Desea eliminar este producto del pedido?")
+                                .setPositiveButton("Sí") { _, _ ->
+                                    onItemDelete?.invoke(detalle)
+                                }
+                                .setNegativeButton("No", null)
+                                .show()
+                        }
+                    }
+                    
+                    buttonIncrementar.setOnClickListener {
+                        onItemUpdate?.invoke(detalle, detalle.cantidad + 1)
+                    }
+                    
+                    buttonEliminar.setOnClickListener {
+                        androidx.appcompat.app.AlertDialog.Builder(root.context)
+                            .setTitle("Eliminar producto")
+                            .setMessage("¿Desea eliminar este producto del pedido?")
+                            .setPositiveButton("Sí") { _, _ ->
+                                onItemDelete?.invoke(detalle)
+                            }
+                            .setNegativeButton("No", null)
+                            .show()
+                    }
+                } else {
+                    // Ocultar controles de edición
+                    layoutControlesEdicion.visibility = View.GONE
                 }
             }
         }

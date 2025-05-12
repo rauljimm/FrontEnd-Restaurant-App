@@ -79,7 +79,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.nuevaCategoriaFragment,
                 R.id.nuevoPedidoFragment,
                 R.id.agregarProductoFragment,
-                R.id.detalleCuentaFragment
+                R.id.detalleCuentaFragment,
+                R.id.usuariosFragment
             )
             
             appBarConfiguration = AppBarConfiguration(
@@ -146,6 +147,11 @@ class MainActivity : AppCompatActivity() {
                         }
                         R.id.nav_reservas -> {
                             navController.navigate(R.id.reservasFragment)
+                            drawer.closeDrawer(GravityCompat.START)
+                            true
+                        }
+                        R.id.nav_usuarios -> {
+                            navController.navigate(R.id.usuariosFragment)
                             drawer.closeDrawer(GravityCompat.START)
                             true
                         }
@@ -266,7 +272,13 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.action_add_mesa -> {
                 // Navegar al fragmento para crear mesa (solo admin)
-                navController.navigate(R.id.nuevaMesaFragment)
+                try {
+                    navController.navigate(R.id.nuevaMesaFragment)
+                    Log.d(TAG, "Navegando al fragmento para crear mesa")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error al navegar a nuevaMesaFragment: ${e.message}")
+                    Toast.makeText(this, "Error al abrir la pantalla de creación de mesa", Toast.LENGTH_SHORT).show()
+                }
                 true
             }
             R.id.action_historial_cuentas -> {
@@ -297,30 +309,42 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Configurando menú de navegación para rol: $currentRole")
         
         val menu = navView.menu
-        when (currentRole) {
-            "admin" -> {
-                // Administrador ve productos, categorías, cuentas, mesas y reservas
+        when (currentRole.uppercase()) {
+            "ADMIN" -> {
+                // Administrador ve productos, categorías, cuentas, mesas, reservas y usuarios
                 menu.findItem(R.id.nav_productos)?.isVisible = true
                 menu.findItem(R.id.nav_mesas)?.isVisible = true
                 menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
                 menu.findItem(R.id.nav_cuentas)?.isVisible = true
                 menu.findItem(R.id.nav_reservas)?.isVisible = true
+                menu.findItem(R.id.nav_usuarios)?.isVisible = true
             }
-            "camarero" -> {
+            "CAMARERO" -> {
                 // Camarero ve mesas, pedidos activos, productos y reservas
                 menu.findItem(R.id.nav_productos)?.isVisible = true
                 menu.findItem(R.id.nav_mesas)?.isVisible = true
                 menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
                 menu.findItem(R.id.nav_cuentas)?.isVisible = false
                 menu.findItem(R.id.nav_reservas)?.isVisible = true
+                menu.findItem(R.id.nav_usuarios)?.isVisible = false
             }
-            "cocinero" -> {
+            "COCINERO" -> {
                 // Cocinero ve solo pedidos activos
                 menu.findItem(R.id.nav_productos)?.isVisible = false
                 menu.findItem(R.id.nav_mesas)?.isVisible = false
                 menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
                 menu.findItem(R.id.nav_cuentas)?.isVisible = false
                 menu.findItem(R.id.nav_reservas)?.isVisible = false
+                menu.findItem(R.id.nav_usuarios)?.isVisible = false
+            }
+            else -> {
+                // Rol desconocido, mostrar opciones mínimas
+                menu.findItem(R.id.nav_productos)?.isVisible = false
+                menu.findItem(R.id.nav_mesas)?.isVisible = false
+                menu.findItem(R.id.nav_pedidos_activos)?.isVisible = true
+                menu.findItem(R.id.nav_cuentas)?.isVisible = false
+                menu.findItem(R.id.nav_reservas)?.isVisible = false
+                menu.findItem(R.id.nav_usuarios)?.isVisible = false
             }
         }
     }

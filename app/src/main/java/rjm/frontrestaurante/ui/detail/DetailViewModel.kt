@@ -30,9 +30,16 @@ class DetailViewModel(private val productoId: Int) : ViewModel() {
     fun cargarProducto() {
         viewModelScope.launch {
             try {
-                // Cargar directamente desde la API
-                val token = "Bearer ${preferences.getAuthToken()}"
-                val response = apiService.getProductoById(token, productoId)
+                // Obtener token desde SessionManager
+                val token = rjm.frontrestaurante.util.SessionManager.getToken()
+                
+                if (token.isNullOrEmpty()) {
+                    _error.value = "Error de autenticación: Token no disponible"
+                    return@launch
+                }
+                
+                val authToken = "Bearer $token"
+                val response = apiService.getProductoById(authToken, productoId)
                 
                 if (response.isSuccessful && response.body() != null) {
                     val productoApi = response.body()!!
@@ -52,8 +59,17 @@ class DetailViewModel(private val productoId: Int) : ViewModel() {
     fun eliminarProducto() {
         viewModelScope.launch {
             try {
-                val token = "Bearer ${preferences.getAuthToken()}"
-                val response = apiService.deleteProducto(token, productoId)
+                // Obtener token desde SessionManager en lugar de preferences
+                val token = rjm.frontrestaurante.util.SessionManager.getToken()
+                
+                if (token.isNullOrEmpty()) {
+                    _error.value = "Error de autenticación: Token no disponible"
+                    _productoEliminado.value = false
+                    return@launch
+                }
+                
+                val authToken = "Bearer $token"
+                val response = apiService.deleteProducto(authToken, productoId)
                 
                 if (response.isSuccessful) {
                     _productoEliminado.value = true

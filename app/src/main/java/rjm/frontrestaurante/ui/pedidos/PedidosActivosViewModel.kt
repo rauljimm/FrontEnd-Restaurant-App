@@ -41,10 +41,24 @@ class PedidosActivosViewModel : ViewModel() {
                 }
 
                 // Obtener todos los pedidos
+                android.util.Log.d("PedidosActivosViewModel", "Cargando pedidos activos con token: ${token.take(10)}...")
                 val response = api.getPedidos("Bearer $token")
+                
                 if (response.isSuccessful) {
+                    // Log para depuración
+                    android.util.Log.d("PedidosActivosViewModel", "Respuesta exitosa con ${response.body()?.size ?: 0} pedidos")
+                    
                     // Obtener el rol del usuario para aplicar filtros según corresponda
                     val userRole = SessionManager.getUserRole()
+                    android.util.Log.d("PedidosActivosViewModel", "Rol de usuario: $userRole")
+                    
+                    // Si no hay pedidos, mostrar log
+                    if (response.body() == null || response.body()?.isEmpty() == true) {
+                        android.util.Log.d("PedidosActivosViewModel", "No se encontraron pedidos")
+                        _pedidos.value = emptyList()
+                        _isLoading.value = false
+                        return@launch
+                    }
                     
                     val pedidosActivos = when (userRole) {
                         "cocinero" -> {
@@ -63,13 +77,18 @@ class PedidosActivosViewModel : ViewModel() {
                         }
                     }
                     
+                    android.util.Log.d("PedidosActivosViewModel", "Filtrando para rol $userRole: ${pedidosActivos.size} pedidos activos")
                     _pedidos.value = pedidosActivos
                 } else {
-                    _error.value = "Error: ${response.code()} - ${response.message()}"
+                    val errorBody = response.errorBody()?.string() ?: "Error desconocido"
+                    android.util.Log.e("PedidosActivosViewModel", "Error ${response.code()}: $errorBody")
+                    _error.value = "Error: ${response.code()} - ${response.message()}\n$errorBody"
                 }
             } catch (e: IOException) {
+                android.util.Log.e("PedidosActivosViewModel", "Error de conexión: ${e.message}", e)
                 _error.value = "Error de conexión: ${e.message}"
             } catch (e: Exception) {
+                android.util.Log.e("PedidosActivosViewModel", "Error general: ${e.message}", e)
                 _error.value = "Error: ${e.message}"
             } finally {
                 _isLoading.value = false

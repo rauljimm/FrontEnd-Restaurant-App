@@ -29,11 +29,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         viewBinding = true
@@ -76,6 +76,9 @@ dependencies {
     // Glide para carga de imágenes
     implementation(libs.glide)
     kapt(libs.glide.compiler)
+    
+    // iText PDF para generación de PDFs
+    implementation("com.itextpdf:itextpdf:5.5.13.3")
     
     // Test
     testImplementation(libs.junit)

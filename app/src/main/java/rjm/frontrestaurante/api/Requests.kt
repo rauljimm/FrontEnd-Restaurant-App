@@ -36,6 +36,11 @@ data class DetallePedidoUpdateRequest(
 )
 
 /**
+ * Alias para DetallePedidoUpdateRequest
+ */
+typealias DetalleUpdateRequest = DetallePedidoUpdateRequest
+
+/**
  * Clase para solicitud de actualización de cuenta
  */
 data class CuentaUpdateRequest(

@@ -76,6 +76,69 @@
             app:layout_constraintTop_toBottomOf="@+id/textViewPrecioProducto"
             tools:text="Observaciones: Sin cebolla"
             tools:visibility="visible" />
+            
+        <!-- Controles de edición (visibles solo para admin y camareros) -->
+        <LinearLayout
+            android:id="@+id/layoutControlesEdicion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/textViewObservacionesDetalle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+            
+            <!-- Botón decrementar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonDecrementar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@android:drawable/ic_delete"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                
+            <!-- Espacio -->
+            <Space
+                android:layout_width="8dp"
+                android:layout_height="wrap_content" />
+                
+            <!-- Botón incrementar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonIncrementar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@android:drawable/ic_input_add"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                
+            <!-- Espacio flexible -->
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+                
+            <!-- Botón eliminar -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonEliminar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Eliminar"
+                app:icon="@android:drawable/ic_menu_delete"
+                style="@style/Widget.MaterialComponents.Button.TextButton" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

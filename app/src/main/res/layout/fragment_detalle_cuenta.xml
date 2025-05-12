@@ -9,8 +9,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonImprimirCuenta"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -122,6 +122,39 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <Button
+        android:id="@+id/buttonImprimirCuenta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="Imprimir Cuenta (PDF)"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@android:color/white"
+        android:drawableStart="@android:drawable/ic_menu_save"
+        android:drawablePadding="8dp"
+        android:padding="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonEliminarCuenta"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/buttonEliminarCuenta"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Eliminar Cuenta"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:textColor="@android:color/white"
+        android:drawableStart="@android:drawable/ic_menu_delete"
+        android:drawablePadding="8dp"
+        android:padding="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone" />
 
     <ProgressBar
         android:id="@+id/progressBar"

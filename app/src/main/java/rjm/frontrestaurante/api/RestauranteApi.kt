@@ -22,6 +22,31 @@ interface RestauranteApi {
     @GET("usuarios/me")
     suspend fun getCurrentUser(@Header("Authorization") token: String): Response<Usuario>
 
+    // Usuarios
+    @GET("usuarios")
+    suspend fun getUsuarios(
+        @Header("Authorization") token: String
+    ): Response<List<Usuario>>
+
+    @POST("usuarios")
+    suspend fun createUsuario(
+        @Header("Authorization") token: String,
+        @Body usuario: UsuarioRequest
+    ): Response<Usuario>
+
+    @PUT("usuarios/{id}")
+    suspend fun updateUsuario(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body usuario: UsuarioUpdateRequest
+    ): Response<Usuario>
+
+    @DELETE("usuarios/{id}")
+    suspend fun deleteUsuario(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
+
     // Mesas
     @GET("mesas")
     suspend fun getMesas(
@@ -45,8 +70,21 @@ interface RestauranteApi {
     suspend fun updateMesa(
         @Header("Authorization") token: String,
         @Path("id") id: Int,
+        @Body mesa: RequestBody
+    ): Response<Mesa>
+
+    @PUT("mesas/{id}")
+    suspend fun updateMesaWithRequest(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
         @Body mesa: MesaUpdateRequest
     ): Response<Mesa>
+
+    @DELETE("mesas/{id}")
+    suspend fun deleteMesa(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
 
     // Pedidos
     @GET("pedidos")
@@ -76,6 +114,12 @@ interface RestauranteApi {
         @Path("id") id: Int,
         @Body pedido: PedidoUpdateRequest
     ): Response<Pedido>
+
+    @DELETE("pedidos/{id}")
+    suspend fun deletePedido(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
 
     // Detalles de Pedido
     @POST("pedidos/{pedidoId}/detalles")
@@ -226,6 +270,12 @@ interface RestauranteApi {
         @Path("id") id: Int,
         @Body cuenta: CuentaUpdateRequest
     ): Response<Cuenta>
+
+    @DELETE("cuentas/{id}")
+    suspend fun deleteCuenta(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<Unit>
 }
 
 /**
@@ -279,4 +329,28 @@ data class ReservaRequest(
     val num_personas: Int,
     val observaciones: String? = null,
     val estado: String? = null
+)
+
+/**
+ * Request para crear un usuario
+ */
+data class UsuarioRequest(
+    val username: String,
+    val password: String,
+    val email: String,
+    val nombre: String,
+    val apellido: String,
+    val rol: String
+)
+
+/**
+ * Request para actualizar un usuario
+ */
+data class UsuarioUpdateRequest(
+    val email: String? = null,
+    val nombre: String? = null,
+    val apellido: String? = null,
+    val password: String? = null,
+    val rol: String? = null,
+    val activo: Boolean? = null
 ) 

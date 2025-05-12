@@ -24,6 +24,11 @@
             android:icon="@drawable/ic_money"
             android:title="@string/nav_cuentas"
             android:visible="false" />
+        <item
+            android:id="@+id/nav_usuarios"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="@string/nav_usuarios"
+            android:visible="false" />
     </group>
 
     <item android:title="">

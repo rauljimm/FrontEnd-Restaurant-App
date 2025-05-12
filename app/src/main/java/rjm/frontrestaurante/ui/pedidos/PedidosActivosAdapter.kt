@@ -45,7 +45,7 @@ class PedidosActivosAdapter(
         fun bind(pedido: Pedido) {
             binding.apply {
                 textViewIdPedido.text = "Pedido #${pedido.id}"
-                textViewNumeroMesa.text = "Mesa ${pedido.mesaId}"
+                textViewNumeroMesa.text = if (pedido.mesaId != null) "Mesa ${pedido.mesaId}" else "Sin mesa"
                 textViewEstadoPedido.text = when(pedido.estado) {
                     EstadoPedido.RECIBIDO -> root.context.getString(R.string.pedido_recibido)
                     EstadoPedido.EN_PREPARACION -> root.context.getString(R.string.pedido_en_preparacion)

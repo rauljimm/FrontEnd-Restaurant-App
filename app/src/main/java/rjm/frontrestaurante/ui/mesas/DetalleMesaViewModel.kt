@@ -14,6 +14,7 @@ import rjm.frontrestaurante.util.SessionManager
 import java.io.IOException
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class DetalleMesaViewModel : ViewModel() {
 
@@ -86,48 +87,59 @@ class DetalleMesaViewModel : ViewModel() {
                 // Cargar detalles de la mesa
                 val mesaResponse = api.getMesaById("Bearer $token", mesaId)
                 if (mesaResponse.isSuccessful) {
-                    _mesa.value = mesaResponse.body()
-                    
-                    // Si la mesa está reservada, cargar la reserva activa
-                    if (_mesa.value?.estado == rjm.frontrestaurante.model.EstadoMesa.RESERVADA) {
-                        cargarReservaActiva()
-                    } else {
-                        _reservaActiva.value = null
+                    try {
+                        _mesa.value = mesaResponse.body()
+                        
+                        // Si la mesa está reservada, cargar la reserva activa
+                        if (_mesa.value?.estado == rjm.frontrestaurante.model.EstadoMesa.RESERVADA) {
+                            cargarReservaActiva()
+                        } else {
+                            _reservaActiva.value = null
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("DetalleMesaViewModel", "Error al procesar detalles de la mesa: ${e.message}", e)
+                        _error.value = "Error al procesar detalles de la mesa: ${e.message}"
                     }
                 } else {
                     _error.value = "Error al cargar detalles de la mesa: ${mesaResponse.code()} - ${mesaResponse.message()}"
                 }
 
                 // Cargar pedidos de la mesa
-                val pedidosResponse = api.getPedidos(
-                    "Bearer $token", 
-                    mesaId = mesaId,
-                    activos = false, // Cargar todos los pedidos de la mesa, incluyendo los entregados
-                    fechaInicio = fechaInicioSesion // Solo los pedidos desde el inicio de la sesión
-                )
-                if (pedidosResponse.isSuccessful) {
-                    val pedidos = pedidosResponse.body() ?: emptyList()
-                    
-                    // Si no se encontraron pedidos con el filtro de fecha, intentar cargar todos
-                    if (pedidos.isEmpty() && fechaInicioSesion != null) {
-                        android.util.Log.d("DetalleMesaViewModel", "No se encontraron pedidos con filtro de fecha. Intentando sin filtro...")
-                        val allPedidosResponse = api.getPedidos(
-                            "Bearer $token", 
-                            mesaId = mesaId,
-                            activos = false,
-                            fechaInicio = null
-                        )
-                        if (allPedidosResponse.isSuccessful) {
-                            _pedidos.value = allPedidosResponse.body() ?: emptyList()
+                try {
+                    val pedidosResponse = api.getPedidos(
+                        "Bearer $token", 
+                        mesaId = mesaId,
+                        activos = false, // Cargar todos los pedidos de la mesa, incluyendo los entregados
+                        fechaInicio = fechaInicioSesion // Solo los pedidos desde el inicio de la sesión
+                    )
+                    if (pedidosResponse.isSuccessful) {
+                        val pedidos = pedidosResponse.body() ?: emptyList()
+                        
+                        // Si no se encontraron pedidos con el filtro de fecha, intentar cargar todos
+                        if (pedidos.isEmpty() && fechaInicioSesion != null) {
+                            android.util.Log.d("DetalleMesaViewModel", "No se encontraron pedidos con filtro de fecha. Intentando sin filtro...")
+                            val allPedidosResponse = api.getPedidos(
+                                "Bearer $token", 
+                                mesaId = mesaId,
+                                activos = false,
+                                fechaInicio = null
+                            )
+                            if (allPedidosResponse.isSuccessful) {
+                                _pedidos.value = allPedidosResponse.body() ?: emptyList()
+                            } else {
+                                _pedidos.value = emptyList()
+                            }
                         } else {
-                            _pedidos.value = emptyList()
+                            _pedidos.value = pedidos
                         }
+                        android.util.Log.d("DetalleMesaViewModel", "Pedidos cargados: ${_pedidos.value?.size ?: 0}")
                     } else {
-                        _pedidos.value = pedidos
+                        _error.value = "Error al cargar pedidos: ${pedidosResponse.code()} - ${pedidosResponse.message()}"
                     }
-                    android.util.Log.d("DetalleMesaViewModel", "Pedidos cargados: ${_pedidos.value?.size ?: 0}")
-                } else {
-                    _error.value = "Error al cargar pedidos: ${pedidosResponse.code()} - ${pedidosResponse.message()}"
+                } catch (e: Exception) {
+                    android.util.Log.e("DetalleMesaViewModel", "Error al cargar pedidos: ${e.message}", e)
+                    _error.value = "Error al cargar pedidos: ${e.message}"
+                    _pedidos.value = emptyList()
                 }
             } catch (e: IOException) {
                 _error.value = "Error de conexión: ${e.message}"
@@ -188,28 +200,35 @@ class DetalleMesaViewModel : ViewModel() {
                     estado = "libre",
                     metodoPago = metodoPago
                 )
-                val response = api.updateMesa("Bearer $token", mesaId, mesaUpdateRequest)
                 
-                if (response.isSuccessful) {
-                    // Recargar datos de la mesa para reflejar el cambio
-                    loadData()
-                    _mesaCerradaExitosamente.value = true
-                } else {
-                    // Verificar si es un error de permisos (403 Forbidden)
-                    if (response.code() == 403) {
-                        android.util.Log.w("DetalleMesaViewModel", 
-                            "No se pudo cambiar el estado de la mesa a LIBRE (permisos insuficientes), " +
-                            "pero los pedidos han sido marcados como entregados")
-                        
-                        // Consideramos la operación como exitosa aunque el cambio de estado falle
-                        // porque los pedidos ya se han marcado como entregados
-                        _mesaCerradaExitosamente.value = true
-                        
-                        // Recargar datos de la mesa para reflejar el estado actual
+                try {
+                    // Usar el método que acepta directamente MesaUpdateRequest
+                    val response = api.updateMesaWithRequest("Bearer $token", mesaId, mesaUpdateRequest)
+                    
+                    if (response.isSuccessful) {
+                        // Recargar datos de la mesa para reflejar el cambio
                         loadData()
+                        _mesaCerradaExitosamente.value = true
                     } else {
-                        _error.value = "Error al cerrar la mesa: ${response.code()} - ${response.message()}"
+                        // Verificar si es un error de permisos (403 Forbidden)
+                        if (response.code() == 403) {
+                            android.util.Log.w("DetalleMesaViewModel", 
+                                "No se pudo cambiar el estado de la mesa a LIBRE (permisos insuficientes), " +
+                                "pero los pedidos han sido marcados como entregados")
+                            
+                            // Consideramos la operación como exitosa aunque el cambio de estado falle
+                            // porque los pedidos ya se han marcado como entregados
+                            _mesaCerradaExitosamente.value = true
+                            
+                            // Recargar datos de la mesa para reflejar el estado actual
+                            loadData()
+                        } else {
+                            _error.value = "Error al cerrar la mesa: ${response.code()} - ${response.message()}"
+                        }
                     }
+                } catch (e: Exception) {
+                    android.util.Log.e("DetalleMesaViewModel", "Error al actualizar mesa: ${e.message}", e)
+                    _error.value = "Error al cerrar la mesa: ${e.message}"
                 }
             } catch (e: IOException) {
                 _error.value = "Error de conexión: ${e.message}"
@@ -277,10 +296,8 @@ class DetalleMesaViewModel : ViewModel() {
                 }
                 
                 // Crear JSON para la actualización
-                val requestBody = RequestBody.create(
-                    "application/json".toMediaTypeOrNull(),
-                    """{"estado": "cliente_llego"}"""
-                )
+                val jsonData = """{"estado": "cliente_llego"}"""
+                val requestBody = jsonData.toRequestBody("application/json".toMediaTypeOrNull())
                 
                 // Actualizar estado de la reserva
                 val response = api.updateReserva("Bearer $token", reserva.id, requestBody)
@@ -320,10 +337,8 @@ class DetalleMesaViewModel : ViewModel() {
                 }
                 
                 // Crear JSON para la actualización
-                val requestBody = RequestBody.create(
-                    "application/json".toMediaTypeOrNull(),
-                    """{"estado": "cliente_no_llego"}"""
-                )
+                val jsonData = """{"estado": "cliente_no_llego"}"""
+                val requestBody = jsonData.toRequestBody("application/json".toMediaTypeOrNull())
                 
                 // Actualizar estado de la reserva
                 val response = api.updateReserva("Bearer $token", reserva.id, requestBody)

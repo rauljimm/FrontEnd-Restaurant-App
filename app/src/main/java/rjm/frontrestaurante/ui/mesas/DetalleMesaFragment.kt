@@ -94,7 +94,7 @@ class DetalleMesaFragment : Fragment(), Refreshable {
             
             // Mostrar/ocultar botones según el estado
             val userRole = SessionManager.getUserRole()
-            binding.fabNuevoPedido.visibility = if (userRole == "camarero" && mesa.estado != EstadoMesa.MANTENIMIENTO) View.VISIBLE else View.GONE
+            binding.fabNuevoPedido.visibility = if ((userRole == "camarero" || userRole == "admin") && mesa.estado != EstadoMesa.MANTENIMIENTO) View.VISIBLE else View.GONE
             binding.buttonReservar.visibility = if (userRole == "camarero" && mesa.estado == EstadoMesa.LIBRE) View.VISIBLE else View.GONE
             binding.buttonCerrarMesa.visibility = if (userRole == "camarero" && mesa.estado == EstadoMesa.OCUPADA) View.VISIBLE else View.GONE
             

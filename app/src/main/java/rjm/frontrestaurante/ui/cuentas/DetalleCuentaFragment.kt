@@ -1,17 +1,25 @@
 package rjm.frontrestaurante.ui.cuentas
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import rjm.frontrestaurante.R
 import rjm.frontrestaurante.databinding.FragmentDetalleCuentaBinding
 import rjm.frontrestaurante.model.DetalleCuenta
+import rjm.frontrestaurante.util.PdfViewerUtils
+import rjm.frontrestaurante.util.SessionManager
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -23,6 +31,26 @@ class DetalleCuentaFragment : Fragment() {
     private val args: DetalleCuentaFragmentArgs by navArgs()
     private lateinit var viewModel: DetalleCuentaViewModel
     private lateinit var detallesAdapter: DetallesCuentaAdapter
+    
+    // Rol del usuario actual
+    private val userRole = SessionManager.getUserRole()
+    
+    // Launcher para solicitar permisos
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permiso concedido, generar PDF
+            generarPdf()
+        } else {
+            // Permiso denegado
+            Toast.makeText(
+                requireContext(),
+                "Se necesita permiso de almacenamiento para generar el PDF",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,6 +73,9 @@ class DetalleCuentaFragment : Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = detallesAdapter
         }
+        
+        // Configurar visibilidad del botón de imprimir según el rol
+        configureImprimirButton()
         
         // Observar datos de la cuenta
         viewModel.cuenta.observe(viewLifecycleOwner) { cuenta ->
@@ -89,6 +120,104 @@ class DetalleCuentaFragment : Fragment() {
         viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
+        
+        // Observar cuando el PDF se ha generado correctamente
+        viewModel.pdfGenerado.observe(viewLifecycleOwner) { pdfFile ->
+            if (pdfFile != null) {
+                // Abrir el PDF con el visualizador interno
+                PdfViewerUtils.openPdfFile(requireContext(), pdfFile)
+            }
+        }
+        
+        // Observar cuando la cuenta ha sido eliminada
+        viewModel.cuentaEliminada.observe(viewLifecycleOwner) { eliminada ->
+            if (eliminada) {
+                Toast.makeText(requireContext(), "Cuenta eliminada correctamente", Toast.LENGTH_SHORT).show()
+                // Navegar hacia atrás
+                findNavController().navigateUp()
+            }
+        }
+    }
+    
+    /**
+     * Configura el botón de imprimir según el rol del usuario
+     */
+    private fun configureImprimirButton() {
+        // Solo mostrar el botón a administradores
+        if (userRole == "admin") {
+            binding.buttonImprimirCuenta.visibility = View.VISIBLE
+            binding.buttonImprimirCuenta.setOnClickListener {
+                checkPermissionAndGeneratePdf()
+            }
+            
+            // Configurar botón de eliminar cuenta (solo para admin)
+            binding.buttonEliminarCuenta.visibility = View.VISIBLE
+            binding.buttonEliminarCuenta.setOnClickListener {
+                mostrarDialogoConfirmacionEliminar()
+            }
+        } else {
+            binding.buttonImprimirCuenta.visibility = View.GONE
+            binding.buttonEliminarCuenta.visibility = View.GONE
+        }
+    }
+    
+    /**
+     * Verifica permisos antes de generar el PDF
+     */
+    private fun checkPermissionAndGeneratePdf() {
+        // En Android 10+ (API 29+) no se necesita pedir permiso para escribir en el directorio privado de la app
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            generarPdf()
+            return
+        }
+        
+        // Para versiones anteriores a Android 10, verificar permiso de almacenamiento
+        val permission = Manifest.permission.WRITE_EXTERNAL_STORAGE
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Ya tenemos permiso
+                generarPdf()
+            }
+            
+            shouldShowRequestPermissionRationale(permission) -> {
+                // Explicar al usuario por qué necesitamos el permiso
+                Toast.makeText(
+                    requireContext(),
+                    "Se necesita acceso al almacenamiento para guardar el PDF",
+                    Toast.LENGTH_LONG
+                ).show()
+                requestPermissionLauncher.launch(permission)
+            }
+            
+            else -> {
+                // Primera vez o "No volver a preguntar" no marcado
+                requestPermissionLauncher.launch(permission)
+            }
+        }
+    }
+    
+    /**
+     * Genera el PDF de la cuenta
+     */
+    private fun generarPdf() {
+        viewModel.generarPdf(requireContext())
+    }
+    
+    /**
+     * Muestra un diálogo de confirmación para eliminar la cuenta
+     */
+    private fun mostrarDialogoConfirmacionEliminar() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Eliminar Cuenta")
+            .setMessage("¿Estás seguro de que deseas eliminar esta cuenta? Esta acción no se puede deshacer.")
+            .setPositiveButton("Eliminar") { _, _ ->
+                viewModel.eliminarCuenta()
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
     
     override fun onDestroyView() {

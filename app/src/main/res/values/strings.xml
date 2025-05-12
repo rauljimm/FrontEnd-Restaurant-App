@@ -16,6 +16,7 @@
     <string name="nav_reservas">Reservas</string>
     <string name="nav_logout">Cerrar Sesión</string>
     <string name="nav_cuentas">Historial de Cuentas</string>
+    <string name="nav_usuarios">Gestión de Usuarios</string>
     
     <!-- Títulos de Fragmentos -->
     <string name="mesas_title">Mesas</string>
@@ -30,6 +31,10 @@
     <string name="products">Productos</string>
     <string name="nueva_mesa_title">Nueva Mesa</string>
     <string name="title_nueva_mesa">Nueva Mesa</string>
+    <string name="title_editar_mesa">Editar Mesa</string>
+    <string name="usuarios_title">Gestión de Usuarios</string>
+    <string name="nuevo_usuario_title">Nuevo Usuario</string>
+    <string name="editar_usuario_title">Editar Usuario</string>
     
     <!-- Acciones -->
     <string name="action_refresh">Actualizar</string>
@@ -38,6 +43,7 @@
     <string name="action_add_producto">Añadir Producto</string>
     <string name="action_add_mesa">Añadir Mesa</string>
     <string name="action_save">Guardar</string>
+    <string name="action_update">Actualizar</string>
     <string name="action_cancel">Cancelar</string>
     <string name="action_send">Enviar a cocina</string>
     <string name="action_mark_ready">Marcar como listo</string>
@@ -47,12 +53,24 @@
     <string name="refresh">Actualizar</string>
     <string name="logout">Cerrar sesión</string>
     <string name="description">Descripción</string>
+    <string name="action_add_usuario">Añadir Usuario</string>
+    <string name="action_edit_usuario">Editar Usuario</string>
+    <string name="action_delete_usuario">Eliminar Usuario</string>
     
     <!-- Estados de Mesa -->
     <string name="mesa_libre">Libre</string>
     <string name="mesa_ocupada">Ocupada</string>
     <string name="mesa_reservada">Reservada</string>
     <string name="mesa_mantenimiento">Mantenimiento</string>
+    
+    <!-- Ubicaciones de Mesa -->
+    <string name="ubicacion_terraza">Terraza</string>
+    <string name="ubicacion_interior">Interior</string>
+    <string name="ubicacion_comedor">Comedor</string>
+    <string name="ubicacion_barra">Barra</string>
+    <string name="ubicacion">Ubicación: %1$s</string>
+    <string name="ubicacion_prompt">Seleccione ubicación</string>
+    <string name="sin_ubicacion">(Sin ubicación)</string>
     
     <!-- Estados de Pedido -->
     <string name="pedido_recibido">Recibido</string>
@@ -112,4 +130,22 @@
     <!-- Agrego las strings para el navigation drawer -->
     <string name="navigation_drawer_open">Abrir menú de navegación</string>
     <string name="navigation_drawer_close">Cerrar menú de navegación</string>
+
+    <!-- Usuarios -->
+    <string name="nombre">Nombre</string>
+    <string name="apellido">Apellido</string>
+    <string name="rol">Rol</string>
+    <string name="rol_admin">Administrador</string>
+    <string name="rol_camarero">Camarero</string>
+    <string name="rol_cocinero">Cocinero</string>
+    <string name="usuario_creado">Usuario creado correctamente</string>
+    <string name="usuario_actualizado">Usuario actualizado correctamente</string>
+    <string name="usuario_eliminado">Usuario eliminado correctamente</string>
+    <string name="error_crear_usuario">Error al crear el usuario</string>
+    <string name="error_actualizar_usuario">Error al actualizar el usuario</string>
+    <string name="error_eliminar_usuario">Error al eliminar el usuario</string>
+    <string name="error_cargar_usuarios">Error al cargar los usuarios</string>
+    <string name="confirmar_eliminar_usuario">¿Está seguro de eliminar este usuario?</string>
+    <string name="admin_requerido">Solo los administradores pueden gestionar usuarios</string>
+    <string name="sin_usuarios">No hay usuarios disponibles</string>
 </resources>

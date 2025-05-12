@@ -10,19 +10,25 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import rjm.frontrestaurante.R
 import rjm.frontrestaurante.databinding.FragmentNuevaMesaBinding
+import rjm.frontrestaurante.model.Mesa
 
 /**
- * Fragmento para crear una nueva mesa
+ * Fragmento para editar una mesa existente
  */
-class NuevaMesaFragment : Fragment() {
+class EditarMesaFragment : Fragment() {
 
     private var _binding: FragmentNuevaMesaBinding? = null
     private val binding get() = _binding!!
     
     private lateinit var viewModel: MesasViewModel
-    private val TAG = "NuevaMesaFragment"
+    private val args: EditarMesaFragmentArgs by navArgs()
+    private var mesaId: Int = 0
+    private var mesaActual: Mesa? = null
+    
+    private val TAG = "EditarMesaFragment"
     
     // Lista de ubicaciones disponibles
     private val ubicacionesList = listOf(
@@ -44,18 +50,25 @@ class NuevaMesaFragment : Fragment() {
         // Inicializar ViewModel
         viewModel = ViewModelProvider(this).get(MesasViewModel::class.java)
         
+        // Obtener ID de la mesa a editar
+        mesaId = args.mesaId
+        
         // Configurar spinner de ubicaciones
         setupUbicacionesSpinner()
         
+        // Cargar datos de la mesa
+        cargarDatosMesa()
+        
         // Configurar botón de guardar
+        binding.buttonGuardar.setText(R.string.action_update)
         binding.buttonGuardar.setOnClickListener {
-            guardarMesa()
+            actualizarMesa()
         }
         
-        // Observar resultado de creación de mesa
+        // Observar resultado de actualización de mesa
         viewModel.resultado.observe(viewLifecycleOwner) { exitoso ->
             if (exitoso) {
-                Toast.makeText(context, "Mesa guardada correctamente", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Mesa actualizada correctamente", Toast.LENGTH_SHORT).show()
                 // Volver al listado de mesas
                 requireActivity().onBackPressed()
             }
@@ -78,10 +91,32 @@ class NuevaMesaFragment : Fragment() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         
         binding.spinnerUbicacion.adapter = adapter
-        binding.spinnerUbicacion.setSelection(0) // Terraza por defecto
     }
     
-    private fun guardarMesa() {
+    private fun cargarDatosMesa() {
+        // Buscar la mesa en la lista actual
+        val mesas = viewModel.mesas.value ?: emptyList()
+        mesaActual = mesas.find { it.id == mesaId }
+        
+        mesaActual?.let { mesa ->
+            // Cargar datos en los campos
+            binding.editTextNumero.setText(mesa.numero.toString())
+            binding.editTextCapacidad.setText(mesa.capacidad.toString())
+            
+            // Seleccionar ubicación en el spinner
+            val ubicacion = mesa.ubicacion.ifEmpty { "Sin ubicación" }
+            val ubicacionIndex = ubicacionesList.indexOfFirst { it.equals(ubicacion, ignoreCase = true) }
+            if (ubicacionIndex >= 0) {
+                binding.spinnerUbicacion.setSelection(ubicacionIndex)
+            }
+        } ?: run {
+            // No se encontró la mesa
+            Toast.makeText(context, "Error: Mesa no encontrada", Toast.LENGTH_SHORT).show()
+            requireActivity().onBackPressed()
+        }
+    }
+    
+    private fun actualizarMesa() {
         val numeroText = binding.editTextNumero.text.toString().trim()
         val capacidadText = binding.editTextCapacidad.text.toString().trim()
         val ubicacionPosition = binding.spinnerUbicacion.selectedItemPosition
@@ -117,10 +152,11 @@ class NuevaMesaFragment : Fragment() {
         }
         
         // Debug
-        Log.d(TAG, "Guardando mesa: Número $numero, Capacidad: $capacidad, Ubicación: $ubicacion")
+        Log.d(TAG, "Actualizando mesa $mesaId: Número $numero, Capacidad: $capacidad, Ubicación: $ubicacion")
         
-        // Crear mesa con ubicación
-        viewModel.crearMesa(
+        // Actualizar mesa
+        viewModel.actualizarMesa(
+            id = mesaId,
             numero = numero,
             capacidad = capacidad,
             ubicacion = ubicacion

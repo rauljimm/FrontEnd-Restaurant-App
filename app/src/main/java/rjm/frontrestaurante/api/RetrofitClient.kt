@@ -27,9 +27,42 @@ object RetrofitClient {
         
         OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val request = chain.request()
+                android.util.Log.d("OkHttp", "Request URL: ${request.url}")
+                
+                try {
+                    val response = chain.proceed(request)
+                    
+                    // Log de respuesta para debugging
+                    if (!response.isSuccessful) {
+                        if (response.code == 500) {
+                            android.util.Log.e("OkHttp", "HTTP 500 Error for URL: ${request.url}")
+                            val responseBody = response.peekBody(1024 * 1024)
+                            val errorContent = responseBody.string()
+                            android.util.Log.e("OkHttp", "Error response body: $errorContent")
+
+                            // Log additional details
+                            android.util.Log.e("OkHttp", "Request method: ${request.method}")
+                            android.util.Log.e("OkHttp", "Request headers: ${request.headers}")
+                            
+                            if (request.body != null) {
+                                android.util.Log.e("OkHttp", "Request has body")
+                            }
+                        } else {
+                            android.util.Log.w("OkHttp", "HTTP ${response.code} Error for URL: ${request.url}")
+                        }
+                    }
+                    
+                    response
+                } catch (e: Exception) {
+                    android.util.Log.e("OkHttp", "Error in request: ${e.message}", e)
+                    throw e
+                }
+            }
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
             .build()
     }
     
@@ -70,22 +103,69 @@ class MesaDeserializer : JsonDeserializer<Mesa> {
     ): Mesa {
         val jsonObject = json.asJsonObject
         
-        val id = jsonObject.get("id").asInt
-        val numero = jsonObject.get("numero").asInt
-        val capacidad = jsonObject.get("capacidad").asInt
+        android.util.Log.d("MesaDeserializer", "Raw JSON: $jsonObject")
         
-        // Handle the estado field by converting from string to EstadoMesa enum
-        val estadoStr = jsonObject.get("estado").asString
-        val estado = EstadoMesa.fromString(estadoStr)
-        
-        // Get ubicacion or default to empty string
-        val ubicacion = if (jsonObject.has("ubicacion") && !jsonObject.get("ubicacion").isJsonNull) {
-            jsonObject.get("ubicacion").asString
-        } else {
-            ""
+        try {
+            // Mandatory fields with defaults in case of errors
+            val id = if (jsonObject.has("id") && !jsonObject.get("id").isJsonNull) {
+                try {
+                    jsonObject.get("id").asInt
+                } catch (e: Exception) {
+                    android.util.Log.e("MesaDeserializer", "Error parsing id: ${e.message}", e)
+                    0
+                }
+            } else {
+                0
+            }
+            
+            val numero = if (jsonObject.has("numero") && !jsonObject.get("numero").isJsonNull) {
+                try {
+                    jsonObject.get("numero").asInt
+                } catch (e: Exception) {
+                    android.util.Log.e("MesaDeserializer", "Error parsing numero: ${e.message}", e)
+                    0
+                }
+            } else {
+                0
+            }
+            
+            val capacidad = if (jsonObject.has("capacidad") && !jsonObject.get("capacidad").isJsonNull) {
+                try {
+                    jsonObject.get("capacidad").asInt
+                } catch (e: Exception) {
+                    android.util.Log.e("MesaDeserializer", "Error parsing capacidad: ${e.message}", e)
+                    0
+                }
+            } else {
+                0
+            }
+            
+            // Handle the estado field by converting from string to EstadoMesa enum
+            val estadoStr = if (jsonObject.has("estado") && !jsonObject.get("estado").isJsonNull) {
+                jsonObject.get("estado").asString
+            } else {
+                "libre" // Default value
+            }
+            val estado = EstadoMesa.fromString(estadoStr)
+            
+            // Get ubicacion or default to empty string
+            val ubicacion = if (jsonObject.has("ubicacion") && !jsonObject.get("ubicacion").isJsonNull) {
+                try {
+                    jsonObject.get("ubicacion").asString
+                } catch (e: Exception) {
+                    android.util.Log.e("MesaDeserializer", "Error parsing ubicacion: ${e.message}", e)
+                    ""
+                }
+            } else {
+                ""
+            }
+            
+            return Mesa(id, numero, capacidad, estado, ubicacion)
+        } catch (e: Exception) {
+            android.util.Log.e("MesaDeserializer", "Error deserializing Mesa: ${e.message}", e)
+            // Return a default Mesa object
+            return Mesa(0, 0, 0, EstadoMesa.LIBRE, "")
         }
-        
-        return Mesa(id, numero, capacidad, estado, ubicacion)
     }
 }
 
@@ -148,61 +228,181 @@ class PedidoDeserializer : JsonDeserializer<rjm.frontrestaurante.model.Pedido> {
     ): rjm.frontrestaurante.model.Pedido {
         val jsonObject = json.asJsonObject
         
-        val id = jsonObject.get("id").asInt
-        val mesaId = if (jsonObject.has("mesa_id") && !jsonObject.get("mesa_id").isJsonNull) jsonObject.get("mesa_id").asInt else null
-        val camareroId = jsonObject.get("camarero_id").asInt
+        // Log para depuración
+        android.util.Log.d("PedidoDeserializer", "Deserializando pedido: $jsonObject")
         
-        // Handle the estado field by converting from string to EstadoPedido enum
-        val estadoStr = jsonObject.get("estado").asString
-        val estado = rjm.frontrestaurante.model.EstadoPedido.fromString(estadoStr)
-        
-        // Get observaciones or default to empty string
-        val observaciones = if (jsonObject.has("observaciones") && !jsonObject.get("observaciones").isJsonNull) {
-            jsonObject.get("observaciones").asString
-        } else {
-            ""
-        }
-        
-        // Parse dates
-        val fechaStr = jsonObject.get("fecha_creacion").asString
-        val fecha = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", java.util.Locale.getDefault())
-            .parse(fechaStr) ?: java.util.Date()
-        
-        // Get total or default to 0.0
-        val total = if (jsonObject.has("total") && !jsonObject.get("total").isJsonNull) {
-            jsonObject.get("total").asDouble
-        } else {
-            0.0
-        }
-        
-        // Get detalles if available
-        val detalles = if (jsonObject.has("detalles") && !jsonObject.get("detalles").isJsonNull) {
-            val detallesArray = jsonObject.getAsJsonArray("detalles")
-            val detallesList = mutableListOf<rjm.frontrestaurante.model.DetallePedido>()
+        try {
+            val id = jsonObject.get("id").asInt
             
-            for (i in 0 until detallesArray.size()) {
-                val detalleJson = detallesArray.get(i).asJsonObject
-                
-                // Handle the fields and conversion similar to Pedido
-                // This can be expanded as needed
-                
-                // For now, just skip deserializing detalles to keep it simple
+            // Manejar mesaId que podría ser nulo
+            val mesaId = if (jsonObject.has("mesa_id") && !jsonObject.get("mesa_id").isJsonNull) {
+                try {
+                    jsonObject.get("mesa_id").asInt
+                } catch (e: Exception) {
+                    android.util.Log.e("PedidoDeserializer", "Error parsing mesa_id: ${e.message}")
+                    null
+                }
+            } else {
+                null
             }
-            detallesList
-        } else {
-            emptyList()
+            
+            // Manejar camareroId que podría causar problemas
+            val camareroId = if (jsonObject.has("camarero_id") && !jsonObject.get("camarero_id").isJsonNull) {
+                try {
+                    jsonObject.get("camarero_id").asInt
+                } catch (e: Exception) {
+                    android.util.Log.e("PedidoDeserializer", "Error parsing camarero_id: ${e.message}")
+                    null // Ahora devolvemos null en lugar de 0
+                }
+            } else {
+                null // Valor por defecto es null
+            }
+            
+            // Handle the estado field by converting from string to EstadoPedido enum
+            val estadoStr = if (jsonObject.has("estado") && !jsonObject.get("estado").isJsonNull) {
+                jsonObject.get("estado").asString
+            } else {
+                "recibido" // Default value
+            }
+            
+            val estado = try {
+                rjm.frontrestaurante.model.EstadoPedido.fromString(estadoStr)
+            } catch (e: Exception) {
+                android.util.Log.e("PedidoDeserializer", "Error parsing estado: ${e.message}")
+                rjm.frontrestaurante.model.EstadoPedido.RECIBIDO // Default value
+            }
+            
+            // Get observaciones or default to empty string
+            val observaciones = if (jsonObject.has("observaciones") && !jsonObject.get("observaciones").isJsonNull) {
+                jsonObject.get("observaciones").asString
+            } else {
+                ""
+            }
+            
+            // Parse dates with better error handling
+            val fechaStr = if (jsonObject.has("fecha_creacion") && !jsonObject.get("fecha_creacion").isJsonNull) {
+                jsonObject.get("fecha_creacion").asString
+            } else {
+                // Default to current date if not found
+                android.util.Log.w("PedidoDeserializer", "fecha_creacion not found, using current date")
+                java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", java.util.Locale.getDefault())
+                    .format(java.util.Date())
+            }
+            
+            val fecha = try {
+                java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", java.util.Locale.getDefault())
+                    .parse(fechaStr) ?: java.util.Date()
+            } catch (e: Exception) {
+                android.util.Log.e("PedidoDeserializer", "Error parsing fecha: ${e.message}")
+                java.util.Date() // Default to current date
+            }
+            
+            // Get total or default to 0.0
+            val total = if (jsonObject.has("total") && !jsonObject.get("total").isJsonNull) {
+                try {
+                    jsonObject.get("total").asDouble
+                } catch (e: Exception) {
+                    android.util.Log.e("PedidoDeserializer", "Error parsing total: ${e.message}")
+                    0.0 // Default value
+                }
+            } else {
+                0.0
+            }
+            
+            // Get detalles if available
+            val detalles = if (jsonObject.has("detalles") && !jsonObject.get("detalles").isJsonNull) {
+                val detallesArray = jsonObject.getAsJsonArray("detalles")
+                val detallesList = mutableListOf<rjm.frontrestaurante.model.DetallePedido>()
+                
+                for (i in 0 until detallesArray.size()) {
+                    try {
+                        val detalleJson = detallesArray.get(i).asJsonObject
+                        
+                        val detalleId = detalleJson.get("id").asInt
+                        val detallePedidoId = id // El pedido_id es el id del pedido actual
+                        val productoId = detalleJson.get("producto_id").asInt
+                        val cantidad = detalleJson.get("cantidad").asInt
+                        
+                        // Estado del detalle
+                        val detalleEstadoStr = if (detalleJson.has("estado") && !detalleJson.get("estado").isJsonNull) {
+                            detalleJson.get("estado").asString
+                        } else {
+                            "pendiente" // Default value
+                        }
+                        
+                        val detalleEstado = try {
+                            rjm.frontrestaurante.model.EstadoDetallePedido.fromString(detalleEstadoStr)
+                        } catch (e: Exception) {
+                            android.util.Log.e("PedidoDeserializer", "Error parsing detalle estado: ${e.message}")
+                            rjm.frontrestaurante.model.EstadoDetallePedido.PENDIENTE // Default value
+                        }
+                        
+                        // Observaciones
+                        val detalleObservaciones = if (detalleJson.has("observaciones") && !detalleJson.get("observaciones").isJsonNull) {
+                            detalleJson.get("observaciones").asString
+                        } else {
+                            ""
+                        }
+                        
+                        // Extraer información del producto si está disponible
+                        var producto: rjm.frontrestaurante.model.Producto? = null
+                        if (detalleJson.has("producto") && !detalleJson.get("producto").isJsonNull) {
+                            val productoJson = detalleJson.getAsJsonObject("producto")
+                            try {
+                                producto = context.deserialize(productoJson, rjm.frontrestaurante.model.Producto::class.java)
+                            } catch (e: Exception) {
+                                android.util.Log.e("PedidoDeserializer", "Error deserializando producto en detalle: ${e.message}")
+                            }
+                        }
+                        
+                        val detalle = rjm.frontrestaurante.model.DetallePedido(
+                            id = detalleId,
+                            pedidoId = detallePedidoId,
+                            productoId = productoId,
+                            cantidad = cantidad,
+                            observaciones = detalleObservaciones,
+                            estado = detalleEstado,
+                            producto = producto
+                        )
+                        
+                        detallesList.add(detalle)
+                    } catch (e: Exception) {
+                        android.util.Log.e("PedidoDeserializer", "Error deserializando detalle: ${e.message}")
+                        // Continuar con el siguiente detalle si hay un error
+                    }
+                }
+                detallesList
+            } else {
+                emptyList()
+            }
+            
+            val pedido = rjm.frontrestaurante.model.Pedido(
+                id = id,
+                mesaId = mesaId,
+                camareroId = camareroId,
+                estado = estado,
+                observaciones = observaciones,
+                fecha = fecha,
+                detalles = detalles,
+                total = total
+            )
+            
+            android.util.Log.d("PedidoDeserializer", "Pedido deserializado: $pedido con ${detalles.size} detalles")
+            return pedido
+        } catch (e: Exception) {
+            android.util.Log.e("PedidoDeserializer", "Error general deserializando pedido: ${e.message}")
+            // Retornamos un pedido vacío en caso de error para evitar errores de la app
+            return rjm.frontrestaurante.model.Pedido(
+                id = 0,
+                mesaId = null,
+                camareroId = null,
+                estado = rjm.frontrestaurante.model.EstadoPedido.RECIBIDO,
+                observaciones = "Error parsing pedido",
+                fecha = java.util.Date(),
+                detalles = emptyList(),
+                total = 0.0
+            )
         }
-        
-        return rjm.frontrestaurante.model.Pedido(
-            id = id,
-            mesaId = mesaId,
-            camareroId = camareroId,
-            estado = estado,
-            observaciones = observaciones,
-            fecha = fecha,
-            detalles = detalles,
-            total = total
-        )
     }
 }
 
