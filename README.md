@@ -12,20 +12,22 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 
 - 🔐 **Autenticación segura**: Login con credenciales y manejo de tokens JWT
 - 🧑‍🍳 **Vistas específicas por rol**: Interfaces personalizadas para camareros, cocineros y administradores
-- 🪑 **Gestión de mesas**: Visualización y control del estado de mesas
+- 🪑 **Gestión de mesas**: Visualización, control del estado y eliminación de mesas (admin)
 - 📝 **Gestión de pedidos**: Creación, seguimiento y actualización de pedidos
 - 🍽️ **Gestión de productos**: Visualización y administración del menú sin imágenes de vista previa
 - 🧾 **Facturación**: Generación de cuentas al finalizar el servicio de mesa
 - 📅 **Reservas**: Creación, gestión y eliminación de reservas
-- 🌐 **Conexión en tiempo real**: Notificaciones y actualizaciones inmediatas
+- 🌐 **Conexión en tiempo real**: Notificaciones y actualizaciones inmediatas con WebSockets autenticados
 - 🍔 **Menú hamburguesa**: Navegación global desde cualquier pantalla
 - 🛠️ **Creación de elementos**: Interfaces para añadir productos y mesas (admin)
+- 🔄 **Manejo de errores mejorado**: Prevención de errores 500 en detalles de mesa y pedidos
 
 ## 🎯 Funcionalidades por rol
 
 ### 👨‍💼 Administrador
 - Vista completa de todas las mesas
 - Gestión de productos y categorías
+- Creación y eliminación de mesas
 - Creación de nuevos productos y mesas
 - Visualización de todos los pedidos
 - Creación y gestión de usuarios
@@ -54,8 +56,9 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 - **Navigation Component**: Navegación entre pantallas
 - **RecyclerView**: Visualización de listas
 - **Material Design**: Componentes de UI modernos
-- **GSON**: Serialización JSON
+- **GSON**: Serialización JSON con manejadores personalizados para robustez
 - **DrawerLayout/NavigationView**: Navegación con menú lateral
+- **WebSockets**: Comunicación en tiempo real con el servidor
 
 ## ⚙️ Requisitos e Instalación
 
@@ -84,10 +87,14 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 ## 📱 Interfaz de Usuario
 
 ### Mejoras recientes:
+- **Eliminación de mesas**: Funcionalidad exclusiva para administradores
+- **Manejo mejorado de errores**: Prevención de errores 500 en detalles de mesa y pedidos
+- **Deserialización robusta**: Manejo avanzado para productos eliminados o datos faltantes
 - **Menú hamburguesa global**: Acceso a la navegación desde cualquier pantalla
 - **Diseño optimizado**: Interfaz limpia sin imágenes de previsualización en productos
 - **Gestión de reservas simplificada**: Botón único para eliminar reservas completadas
 - **Modo admin mejorado**: Acceso rápido a creación de productos y mesas
+- **Registro de errores detallado**: Mejor trazabilidad de problemas
 
 ## 🔄 Flujo de trabajo principal
 
@@ -110,6 +117,7 @@ FrontRestaurante es una aplicación Android desarrollada en Kotlin que sirve com
 2. **Acceso completo**: Navegar por todas las secciones de la aplicación
 3. **Creación de recursos**: Añadir nuevos productos y mesas desde el menú superior
 4. **Gestión general**: Administrar todos los aspectos del restaurante
+5. **Eliminación de mesas**: Eliminar mesas que no tengan pedidos activos
 
 ## 🧪 Pruebas
 
@@ -157,6 +165,7 @@ La aplicación se comunica con el backend FastAPI a través de:
 
 - **REST API**: Para operaciones CRUD estándar
 - **Autenticación JWT**: Almacenando el token de forma segura para solicitudes futuras
+- **WebSockets**: Para recibir notificaciones en tiempo real con autenticación por token
 
 Principales endpoints utilizados:
 - `/login`: Autenticación de usuarios
@@ -165,6 +174,15 @@ Principales endpoints utilizados:
 - `/productos`: Visualización y administración del menú
 - `/reservas`: Gestión de reservas
 - `/categorias`: Organización de productos
+- `/ws/camareros`, `/ws/cocina`, `/ws/admin`: WebSockets para notificaciones en tiempo real
+
+## 🔄 Seguridad
+
+- **Tokens JWT**: Almacenamiento seguro para todas las solicitudes
+- **Verificación de permisos por rol**: Acceso restringido según el rol del usuario
+- **Websockets autenticados**: Comunicación en tiempo real protegida
+- **Manejo de sesión**: Logout adecuado y limpieza de datos de sesión
+- **Manejo de errores robusto**: Prevención de errores 500 y visualización amigable
 
 ## 🔮 Futuras mejoras
 
